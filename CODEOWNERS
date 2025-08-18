@@ -1,0 +1,49 @@
+# GitGuard Code Owners
+# This file defines who owns different parts of the codebase
+# and is used for automated review assignments and approval gates.
+
+# Global fallback - requires approval from core team
+* @gitguard-team
+
+# Policy files require security team approval
+/policies/ @gitguard-security @gitguard-team
+*.rego @gitguard-security @gitguard-team
+
+# Documentation requires docs team approval
+/docs/ @gitguard-docs @gitguard-team
+/docs_src/ @gitguard-docs @gitguard-team
+/site/ @gitguard-docs @gitguard-team
+*.md @gitguard-docs @gitguard-team
+
+# Architecture Decision Records require architecture team
+/adr/ @gitguard-architecture @gitguard-team
+
+# Security-sensitive files require security team
+SECURITY.md @gitguard-security @gitguard-team
+/scripts/security/ @gitguard-security @gitguard-team
+
+# CI/CD workflows require DevOps team
+/.github/workflows/ @gitguard-devops @gitguard-team
+/ops/ @gitguard-devops @gitguard-team
+Dockerfile* @gitguard-devops @gitguard-team
+docker-compose*.yml @gitguard-devops @gitguard-team
+
+# Core application code
+/apps/guard-api/ @gitguard-backend @gitguard-team
+/apps/guard-codex/ @gitguard-backend @gitguard-team
+/apps/guard-ui/ @gitguard-frontend @gitguard-team
+
+# Database migrations and schemas
+/migrations/ @gitguard-backend @gitguard-devops @gitguard-team
+/schema/ @gitguard-backend @gitguard-devops @gitguard-team
+
+# Configuration files
+*.yml @gitguard-devops @gitguard-team
+*.yaml @gitguard-devops @gitguard-team
+*.toml @gitguard-devops @gitguard-team
+*.json @gitguard-devops @gitguard-team
+
+# Test files follow the same ownership as the code they test
+/tests/ @gitguard-team
+test_*.py @gitguard-team
+*_test.py @gitguard-team

@@ -1,0 +1,49 @@
+# GitGuard Codex Prometheus Alerts
+# Monitors codex service performance and reliability
+
+groups:
+- name: codex
+  rules:
+  - alert: CodexBuildStall
+    expr: histogram_quantile(0.95, sum(rate(codex_activity_seconds_bucket{name="publish_portal"}[10m])) by (le)) > 60
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      summary: "Codex publish is slow (P95 > 60s)"
+      runbook: "RUNBOOK.md#portal-not-updating"
+      description: "The 95th percentile of codex publish_portal activity duration has exceeded 60 seconds for more than 10 minutes. This indicates potential performance degradation in the portal publishing workflow."
+
+  - alert: CodexEventErrors
+    expr: increase(codex_events_total{result!="ok"}[5m]) > 5
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: "Codex event errors > 5 in 5m"
+      runbook: "RUNBOOK.md#stuck-workflow"
+      description: "More than 5 codex events have failed in the last 5 minutes. This may indicate issues with event processing, database connectivity, or workflow execution."
+
+  - alert: JetStreamConsumerLag
+    expr: max(nats_jetstream_consumer_num_pending{consumer="CODEX"}) > 0
+    for: 10m
+    labels:
+      severity: ticket
+    annotations:
+      summary: "JetStream backlog persisting > 10m"
+      runbook: "RUNBOOK.md#jetstream-lag"
+      description: "The CODEX JetStream consumer has pending messages for more than 10 minutes. This indicates the consumer is falling behind in processing events, which may affect PR analysis freshness."
+
+  - alert: CodexFreshnessSLOBreached
+    expr: histogram_quantile(0.99, sum(rate(codex_docs_freshness_seconds_bucket[15m])) by (le)) > 180
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      summary: "Docs freshness P99 > 180s"
+      runbook: "RUNBOOK.md#docs-freshness-slo"
+      description: "The 99th percentile of docs freshness (event-to-doc write latency) has exceeded 180 seconds for more than 15 minutes. This indicates significant delays in documentation generation that may affect developer experience."
+
+# SLO Targets:
+# - Freshness: 99% PR events → page within 3m
+# - Completeness: 95% PRs have ≥1 touches edge within 2m

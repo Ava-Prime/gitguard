@@ -1,0 +1,135 @@
+# GitLeaks configuration for comprehensive secrets detection
+
+title = "GitGuard Secrets Detection"
+
+[extend]
+# Use default rules as base
+useDefault = true
+
+# Custom rules for GitGuard-specific secrets
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+keywords = ["ghp_"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Token"
+regex = '''gho_[0-9a-zA-Z]{36}'''
+keywords = ["gho_"]
+
+[[rules]]
+id = "github-app"
+description = "GitHub App Token"
+regex = '''(ghu|ghs)_[0-9a-zA-Z]{36}'''
+keywords = ["ghu_", "ghs_"]
+
+[[rules]]
+id = "docker-config"
+description = "Docker Config JSON"
+regex = '''"auths":\s*{[^}]+}'''
+keywords = ["auths"]
+
+[[rules]]
+id = "kubernetes-token"
+description = "Kubernetes Service Account Token"
+regex = '''eyJ[A-Za-z0-9_/+-]*={0,2}\.[A-Za-z0-9_/+-]*={0,2}\.[A-Za-z0-9_/+-]*={0,2}'''
+keywords = ["eyJ"]
+
+[[rules]]
+id = "temporal-key"
+description = "Temporal API Key"
+regex = '''temporal[_-]?[a-zA-Z0-9]{32,}'''
+keywords = ["temporal"]
+
+[[rules]]
+id = "nats-creds"
+description = "NATS Credentials"
+regex = '''-----BEGIN NATS USER JWT-----[\s\S]*-----END NATS USER JWT-----'''
+keywords = ["NATS USER JWT"]
+
+[[rules]]
+id = "prometheus-token"
+description = "Prometheus API Token"
+regex = '''prom[_-]?[a-zA-Z0-9]{20,}'''
+keywords = ["prom"]
+
+[[rules]]
+id = "grafana-key"
+description = "Grafana API Key"
+regex = '''eyJrIjoi[A-Za-z0-9_/+-]*={0,2}'''
+keywords = ["eyJrIjoi"]
+
+[[rules]]
+id = "neo4j-password"
+description = "Neo4j Password in Connection String"
+regex = '''neo4j://[^:]+:[^@]+@[^/]+'''
+keywords = ["neo4j://"]
+
+[[rules]]
+id = "postgres-url"
+description = "PostgreSQL Connection URL with Password"
+regex = '''postgres://[^:]+:[^@]+@[^/]+/[^\s]+'''
+keywords = ["postgres://"]
+
+[[rules]]
+id = "redis-url"
+description = "Redis Connection URL with Password"
+regex = '''redis://[^:]*:[^@]+@[^/]+'''
+keywords = ["redis://"]
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT Secret Key"
+regex = '''jwt[_-]?secret[_-]?[a-zA-Z0-9+/]{32,}'''
+keywords = ["jwt_secret", "jwt-secret", "jwtSecret"]
+
+[[rules]]
+id = "encryption-key"
+description = "Encryption Key"
+regex = '''(encrypt|cipher)[_-]?key[_-]?[a-zA-Z0-9+/]{32,}'''
+keywords = ["encrypt_key", "cipher_key", "encryptionKey"]
+
+# Allowlist for test files and documentation
+[allowlist]
+description = "Allowlisted files and patterns"
+
+# Test files with mock secrets
+paths = [
+    '''tests/.*''',
+    '''.*_test\.py''',
+    '''.*\.test\..*''',
+    '''examples/.*''',
+    '''docs/.*\.md'''
+]
+
+# Allowlisted regexes for common false positives
+regexes = [
+    '''example[_-]?secret''',
+    '''test[_-]?token''',
+    '''mock[_-]?key''',
+    '''dummy[_-]?password''',
+    '''placeholder[_-]?secret''',
+    '''your[_-]?token[_-]?here''',
+    '''replace[_-]?with[_-]?actual''',
+    '''<[A-Z_]+>''',  # Template variables like <SECRET_KEY>
+    '''\$\{[A-Z_]+\}''',  # Environment variables like ${SECRET_KEY}
+    '''\{\{[A-Z_]+\}\}''',  # Template variables like {{SECRET_KEY}}
+]
+
+# Allowlisted commits (emergency overrides)
+commits = []
+
+# Allowlisted stopwords to reduce false positives
+stopwords = [
+    "example",
+    "test",
+    "mock",
+    "dummy",
+    "placeholder",
+    "sample",
+    "demo",
+    "template",
+    "default"
+]

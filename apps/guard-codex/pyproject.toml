@@ -1,0 +1,26 @@
+[project]
+name = "guard-codex"
+version = "0.1.0"
+description = "GitGuard Codex: graph + docs emitters"
+requires-python = ">=3.11"
+dependencies = [
+  "temporalio>=1.8.0",
+  "asyncio-nats-client>=0.13.0",
+  "httpx>=0.27.2",
+  "pydantic>=2.7.0",
+  "psycopg[binary,pool]>=3.2.1",
+  "pgvector>=0.2.5",
+  "uvloop>=0.20.0; platform_system!='Windows'",
+  "orjson>=3.10.7",
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.20",
+  "mkdocs-mermaid2-plugin>=1.2.1",
+  "jinja2>=3.1.4",
+  "gitpython>=3.1.43",
+  "python-slugify>=8.0.4",
+  # Optional analyzers (soft fail if unavailable)
+  "tree_sitter_languages>=1.10.2; platform_system!='Windows'",
+  "coverage>=7.6.1",
+]
+
+[tool.pdm]

@@ -1,0 +1,184 @@
+# GitGuard Codex - Canary Deployment Configuration
+# Zero-drama rollout: Phase 2 - Canary Deployment
+# Enable publish for 10% of repos with enhanced monitoring
+
+version: '3.8'
+
+services:
+  guard-codex:
+    environment:
+      # Load canary environment variables
+      - CODEX_PUBLISH_ENABLED=true
+      - CODEX_PUBLISH_PORTAL=external
+      - CODEX_EMBEDDINGS_ENABLED=false
+      - CODEX_OWNERS_ENABLED=false
+      
+      # Database Configuration
+      - DATABASE_URL=postgresql+psycopg://codex_canary:${CODEX_CANARY_DB_PASSWORD}@postgres-canary:5432/codex_canary
+      
+      # JetStream Configuration - Unbounded for 72h replay
+      - JETSTREAM_URL=nats://nats-canary:4222
+      - JETSTREAM_STREAM=codex-canary
+      - JETSTREAM_RETENTION_POLICY=limits
+      - JETSTREAM_MAX_AGE=72h
+      - JETSTREAM_MAX_MSGS=-1
+      - JETSTREAM_MAX_BYTES=-1
+      
+      # Canary Repository Selection (10%)
+      - CODEX_REPO_INCLUDE_LIST=gitguard/platform-core,gitguard/api-gateway,gitguard/auth-service,gitguard/notification-service,gitguard/metrics-collector
+      - CODEX_REPO_EXCLUDE_LIST=
+      
+      # Publishing Configuration
+      - DOCS_BUILD_ENABLED=true
+      - DOCS_PUBLISH_ENABLED=true
+      - DOCS_PUBLISH_URL=${CODEX_DOCS_BASE_URL}
+      
+      # Canary Safety Limits
+      - MAX_CONCURRENT_BUILDS=5
+      - BUILD_TIMEOUT=600s
+      - MAX_REPOS_PER_HOUR=50
+      
+      # Enhanced Monitoring
+      - LOG_LEVEL=INFO
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9091
+      - ALERT_WEBHOOK_URL=${CANARY_ALERT_WEBHOOK}
+      
+      # Canary Features
+      - CODEX_DEBUG_MODE=false
+      - CODEX_DRY_RUN=false
+      - CODEX_CANARY_MODE=true
+      - CODEX_ROLLBACK_ENABLED=true
+      
+      # Performance Monitoring
+      - CODEX_PERFORMANCE_TRACKING=true
+      - CODEX_ERROR_RATE_THRESHOLD=0.05
+      - CODEX_LATENCY_THRESHOLD_MS=5000
+    
+    # Enhanced resource allocation for canary
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    
+    # More frequent health checks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Canary-specific database with replication
+  postgres-canary:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=codex_canary
+      - POSTGRES_USER=codex_canary
+      - POSTGRES_PASSWORD=${CODEX_CANARY_DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_canary_data:/var/lib/postgresql/data
+      - ../apps/guard-codex/graph_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./postgres-canary.conf:/etc/postgresql/postgresql.conf:ro
+    ports:
+      - "5434:5432"
+    command: [
+      "postgres",
+      "-c", "config_file=/etc/postgresql/postgresql.conf",
+      "-c", "log_statement=all",
+      "-c", "log_min_duration_statement=1000"
+    ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codex_canary -d codex_canary"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NATS with enhanced configuration for canary
+  nats-canary:
+    image: nats:2.10-alpine
+    command: [
+      "--jetstream",
+      "--store_dir=/data",
+      "--max_memory_store=2GB",
+      "--max_file_store=10GB",
+      "--max_payload=8MB",
+      "--write_deadline=10s"
+    ]
+    volumes:
+      - nats_canary_data:/data
+      - ./nats-canary.conf:/etc/nats/nats.conf:ro
+    ports:
+      - "4224:4222"
+      - "8224:8222"
+      - "6224:6222"
+    healthcheck:
+      test: ["CMD", "nats", "server", "check", "jetstream"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Prometheus for canary monitoring
+  prometheus-canary:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus-canary.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_canary_data:/prometheus
+    ports:
+      - "9091:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+
+  # Grafana for canary dashboards
+  grafana-canary:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_canary_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus-canary
+
+  # Alertmanager for canary alerts
+  alertmanager-canary:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./alertmanager-canary.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_canary_data:/alertmanager
+    ports:
+      - "9094:9093"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9094'
+
+volumes:
+  postgres_canary_data:
+    driver: local
+  nats_canary_data:
+    driver: local
+  prometheus_canary_data:
+    driver: local
+  grafana_canary_data:
+    driver: local
+  alertmanager_canary_data:
+    driver: local
+
+networks:
+  default:
+    name: gitguard-canary

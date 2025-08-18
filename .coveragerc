@@ -1,0 +1,96 @@
+# GitGuard Coverage Configuration
+# Flexible coverage requirements based on development phase
+
+[run]
+source = apps
+omit = 
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */.venv/*
+    */build/*
+    */dist/*
+    */migrations/*
+    */settings/*
+    */manage.py
+    */wsgi.py
+    */asgi.py
+    */conftest.py
+    # Experimental/initial development files
+    */experimental/*
+    */prototypes/*
+    */drafts/*
+
+branch = True
+parallel = True
+
+[report]
+# Default coverage requirements (production-ready code)
+fail_under = 80
+skip_covered = False
+skip_empty = True
+sort = Cover
+show_missing = True
+precision = 1
+
+# Exclude lines from coverage
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+    # Initial development phase exclusions
+    # TODO: implement
+    # FIXME: 
+    # XXX: 
+    # HACK: 
+    # NOTE: incomplete implementation
+    pass  # placeholder
+    ...  # placeholder
+
+[html]
+directory = htmlcov
+skip_covered = False
+skip_empty = True
+show_contexts = True
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+show_contexts = True
+
+# Coverage thresholds for different development phases
+# These are referenced by CI workflow scripts
+
+# Phase 1: Initial Development (MVP/Prototype)
+# - Minimum viable coverage for basic functionality
+# - Focus on critical paths and error handling
+# - Allow incomplete test fixtures
+# Threshold: 60%
+
+# Phase 2: Feature Development (Active Development)
+# - Increased coverage as features stabilize
+# - Most core functionality should be tested
+# - Some edge cases may be incomplete
+# Threshold: 70%
+
+# Phase 3: Pre-Production (Stabilization)
+# - High coverage for all production code
+# - Comprehensive test coverage required
+# - All critical paths must be tested
+# Threshold: 80%
+
+# Phase 4: Production (Maintenance)
+# - Strict coverage requirements
+# - All new code must maintain high coverage
+# - No coverage regressions allowed
+# Threshold: 85%

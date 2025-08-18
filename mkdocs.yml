@@ -1,0 +1,19 @@
+site_name: GitGuard Codex
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  features:
+    - navigation.tracking
+    - navigation.instant
+    - content.code.copy
+plugins:
+  - search
+  - mermaid2
+  - awesome-pages
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+# Auto-navigation enabled via awesome-pages plugin
+# Remove manual nav to prevent MkDocs drift

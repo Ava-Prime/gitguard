@@ -1,0 +1,143 @@
+services:
+  # Message Queue
+  nats:
+    image: nats:2.10
+    ports: 
+      - "4222:4222"
+      - "8222:8222"  # HTTP monitoring
+    command: ["--http_port", "8222", "--jetstream", "--store_dir", "/data"]
+    volumes:
+      - nats_data:/data
+
+  # Cache & Rate Limiting
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  # Workflow Engine Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Workflow Engine
+  temporal:
+    image: temporalio/auto-setup:1.24
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+      - POSTGRES_SEEDS=postgres
+    ports:
+      - "7233:7233"  # gRPC
+      - "8233:8233"  # Web UI
+    depends_on:
+      - postgres
+
+  # Policy Engine
+  opa:
+    image: openpolicyagent/opa:latest-envoy
+    command: ["run", "--server", "/policies"]
+    volumes:
+      - ../policies:/policies:ro
+    ports:
+      - "8181:8181"
+
+  # GitGuard API Server
+  guard-api:
+    build: 
+      context: ../apps/guard-api
+      dockerfile: Dockerfile
+    environment:
+      - GITGUARD_CONFIG=/app/config/gitguard.settings.yaml
+      - NATS_URL=nats://nats:4222
+      - REDIS_URL=redis://redis:6379
+      - TEMPORAL_ADDRESS=temporal:7233
+      - OPA_URL=http://opa:8181/v1/data/repo/guard
+      - CODEX_URL=http://guard-codex:8010
+    ports:
+      - "8000:8000"  # API
+      - "8080:8080"  # Metrics
+    depends_on:
+      - nats
+      - redis
+      - temporal
+      - opa
+      - guard-codex
+    volumes:
+      - ../config:/app/config:ro
+
+  # GitGuard Codex Worker (Documentation & Knowledge Management)
+  guard-codex:
+    build:
+      context: ..
+      dockerfile: apps/guard-codex/Dockerfile
+    env_file:
+      - ../apps/guard-codex/env.sample  # copy to .env.codex and point here
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - NATS_URL=nats://nats:4222
+      - REPO_ROOT=/workspace/repo
+      - CODEX_DOCS_DIR=/workspace/repo/docs
+      - CODEX_PORTAL_SITE_DIR=/workspace/repo/site
+    volumes:
+      - ../:/workspace/repo
+    depends_on:
+      - temporal
+      - nats
+      - postgres
+
+  # GitGuard Codex Trigger (NATS → Temporal Workflow Launcher)
+  codex-trigger:
+    build:
+      context: ..
+      dockerfile: apps/guard-codex/Dockerfile.trigger
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - temporal
+      - nats
+    restart: unless-stopped
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../ops/prometheus:/etc/prometheus/prometheus:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=gitguard
+    volumes:
+      - ../ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../ops/grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  postgres_data:
+  nats_data:

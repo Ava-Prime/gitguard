@@ -1,0 +1,65 @@
+# GitGuard Configuration
+app:
+  name: "GitGuard"
+  version: "1.0.0"
+  timezone: "Africa/Johannesburg"
+
+github:
+  app_id: "${GITHUB_APP_ID}"
+  webhook_secret: "${GITHUB_WEBHOOK_SECRET}"
+
+automerge:
+  max_risk_score: 0.30
+  coverage_drop_max: -0.2  # percentage points
+  perf_budget_ms: 5
+  require_tests: true
+  
+release_windows:
+  timezone: "Africa/Johannesburg"
+  block_windows:
+    - start: "Fri 16:00"
+      end: "Mon 08:00"
+      reason: "Weekend deployment freeze"
+
+risk_scoring:
+  change_type_weights:
+    docs: 0.05
+    chore: 0.10
+    fix: 0.20
+    feat: 0.25
+    refactor: 0.20
+  size_threshold: 800  # lines
+  max_files: 50
+  security_penalty: 0.30
+  test_bonus: -0.15
+
+labels:
+  risk:
+    low: { name: "risk:low", color: "0e8a16" }
+    med: { name: "risk:med", color: "fbca04" }
+    high: { name: "risk:high", color: "b60205" }
+  area:
+    api: { name: "area:api", color: "1f77b4" }
+    ui: { name: "area:ui", color: "9467bd" }
+    infra: { name: "area:infra", color: "2ca02c" }
+  size:
+    xs: { name: "size:XS", color: "cccccc" }
+    s: { name: "size:S", color: "e0e0e0" }
+    m: { name: "size:M", color: "a0a0a0" }
+    l: { name: "size:L", color: "808080" }
+    xl: { name: "size:XL", color: "505050" }
+  special:
+    automerge: { name: "automerge:allowed", color: "5319e7" }
+    ready: { name: "status:ready", color: "0e8a16" }
+    blocked: { name: "status:blocked", color: "b60205" }
+
+llm:
+  provider: "anthropic"  # or "openai", "local"
+  model: "claude-3-sonnet-20240229"
+  max_tokens: 4000
+  temperature: 0.1
+
+monitoring:
+  metrics_port: 8080
+  health_port: 8081
+  log_level: "info"

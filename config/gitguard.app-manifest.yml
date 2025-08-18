@@ -1,0 +1,21 @@
+name: GitGuard
+url: https://gitguard.your-org.local
+hook_attributes: 
+  url: https://webhooks.gitguard.your-org.local/github
+redirect_url: https://gitguard.your-org.local/app/callback
+public: false
+default_permissions:
+  contents: read
+  metadata: read
+  pull_requests: read
+  checks: write
+default_events:
+  - pull_request
+  - pull_request_review
+  - check_run
+  - push
+  - create
+  - issues
+  - release
+  - repository
+  - discussion

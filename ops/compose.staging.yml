@@ -1,0 +1,107 @@
+# GitGuard Codex - Staging Deployment Configuration
+# Zero-drama rollout: Phase 1 - Staging Cut
+# Deploy with build-only mode (no external publish)
+
+version: '3.8'
+
+services:
+  guard-codex:
+    environment:
+      # Load staging environment variables
+      - CODEX_PUBLISH_ENABLED=true
+      - CODEX_PUBLISH_PORTAL=build-only
+      - CODEX_EMBEDDINGS_ENABLED=false
+      - CODEX_OWNERS_ENABLED=false
+      
+      # Database Configuration
+      - DATABASE_URL=postgresql+psycopg://codex_staging:${CODEX_STAGING_DB_PASSWORD}@postgres:5432/codex_staging
+      
+      # JetStream Configuration
+      - JETSTREAM_URL=nats://nats:4222
+      - JETSTREAM_STREAM=codex-staging
+      - JETSTREAM_RETENTION_POLICY=limits
+      - JETSTREAM_MAX_AGE=24h
+      - JETSTREAM_MAX_MSGS=100000
+      - JETSTREAM_MAX_BYTES=1GB
+      
+      # Build Configuration
+      - DOCS_BUILD_ENABLED=true
+      - DOCS_PUBLISH_ENABLED=false
+      - MAX_CONCURRENT_BUILDS=3
+      - BUILD_TIMEOUT=300s
+      
+      # Monitoring
+      - LOG_LEVEL=DEBUG
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9090
+      
+      # Staging Safety Features
+      - CODEX_DEBUG_MODE=true
+      - CODEX_DRY_RUN=false
+      - CODEX_STAGING_MODE=true
+    
+    # Resource limits for staging
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Staging-specific database
+  postgres-staging:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=codex_staging
+      - POSTGRES_USER=codex_staging
+      - POSTGRES_PASSWORD=${CODEX_STAGING_DB_PASSWORD}
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ../apps/guard-codex/graph_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codex_staging -d codex_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NATS for staging
+  nats-staging:
+    image: nats:2.10-alpine
+    command: [
+      "--jetstream",
+      "--store_dir=/data",
+      "--max_memory_store=1GB",
+      "--max_file_store=2GB"
+    ]
+    volumes:
+      - nats_staging_data:/data
+    ports:
+      - "4223:4222"
+      - "8223:8222"
+    healthcheck:
+      test: ["CMD", "nats", "server", "check", "jetstream"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_staging_data:
+    driver: local
+  nats_staging_data:
+    driver: local
+
+networks:
+  default:
+    name: gitguard-staging

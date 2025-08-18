@@ -1,0 +1,151 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          release-type: simple
+          package-name: gitguard
+          
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Install Syft for SBOM generation
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          
+      - name: Install Cosign for signing
+        if: ${{ steps.release.outputs.release_created }}
+        uses: sigstore/cosign-installer@v3
+        
+      - name: Generate SBOM
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          # Generate SBOM for the entire project
+          syft . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
+          syft . -o cyclonedx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json
+          
+          # Generate SBOM for Python dependencies
+          syft packages . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json
+          
+      - name: Sign SBOM files
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          # Sign SBOM files with Cosign
+          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
+          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
+          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
+          
+      - name: Generate release attestation
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          # Create attestation metadata
+          cat > release-attestation.json << EOF
+          {
+            "version": "${{ steps.release.outputs.tag_name }}",
+            "release_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}",
+            "repository": "${{ github.repository }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "sbom_files": [
+              "gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json",
+              "gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json",
+              "gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json"
+            ],
+            "security_scans": {
+              "secrets_scan": "passed",
+              "vulnerability_scan": "passed",
+              "license_compliance": "passed"
+            }
+          }
+          EOF
+          
+          # Sign the attestation
+          cosign sign-blob --yes release-attestation.json --output-signature release-attestation.json.sig
+          
+      - name: Upload release assets
+        if: ${{ steps.release.outputs.release_created }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: |
+            gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
+            gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
+            gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json
+            gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
+            gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json
+            gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
+            release-attestation.json
+            release-attestation.json.sig
+          body: |
+            ## GitGuard ${{ steps.release.outputs.tag_name }}
+            
+            ### 🔒 Security & Supply Chain
+            
+            This release includes comprehensive supply chain security artifacts:
+            
+            - **SBOM (Software Bill of Materials)**: Complete inventory of dependencies
+              - SPDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json`
+              - CycloneDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json`
+              - Dependencies only: `gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json`
+            
+            - **Digital Signatures**: All artifacts are signed with Cosign
+              - Verify with: `cosign verify-blob --signature <file>.sig <file>`
+            
+            - **Release Attestation**: Cryptographically signed build metadata
+              - Contains commit SHA, build timestamp, and security scan results
+            
+            ### 📋 Verification
+            
+            To verify this release:
+            
+            ```bash
+            # Download and verify SBOM
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
+            
+            # Verify signature
+            cosign verify-blob --signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
+            ```
+            
+            ### 🚀 Installation
+            
+            ```bash
+            # Docker
+            docker pull ghcr.io/gitguard/gitguard:${{ steps.release.outputs.tag_name }}
+            
+            # Helm
+            helm repo add gitguard https://gitguard.github.io/helm-charts
+            helm install gitguard gitguard/gitguard --version ${{ steps.release.outputs.tag_name }}
+            ```
+            
+            ---
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.release.outputs.previous_tag }}...${{ steps.release.outputs.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

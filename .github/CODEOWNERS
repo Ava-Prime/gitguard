@@ -1,0 +1,20 @@
+# GitGuard Code Owners
+# Global rules
+* @platform-team
+
+# Infrastructure requires platform team approval
+/infra/** @platform-team @security-team
+/ops/** @platform-team
+/.github/** @platform-team
+
+# Application areas
+/apps/guard-api/** @backend-team
+/apps/guard-brain/** @ai-team
+/workflows/** @platform-team @backend-team
+
+# Policies need security sign-off
+/policies/** @security-team @platform-team
+
+# Documentation
+**/*.md @docs-team
+/docs/** @docs-team

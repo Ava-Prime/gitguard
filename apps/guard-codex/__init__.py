@@ -1,0 +1,1 @@
+"""GitGuard Codex Worker - Documentation and Knowledge Management Service"""
