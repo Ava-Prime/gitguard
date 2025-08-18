@@ -9,8 +9,17 @@ from metrics import (
     record_webhook_signature_validation, record_connection_status,
     record_nats_message, record_temporal_workflow_start, record_codex_request
 )
+from apps.shared.config import settings
+from apps.shared.logging import configure_logging, logger
+from apps.shared.middleware import RequestIDMiddleware, add_health_routes
 
 app = FastAPI(title="GitGuard API", version="1.0.0")
+
+# Configure shared infrastructure
+configure_logging(settings.log_level)
+app.add_middleware(RequestIDMiddleware)
+add_health_routes(app)
+logger.info("guard-api_boot", env=settings.environment, temporal_host=settings.temporal_host)
 
 # Add metrics middleware
 app.add_middleware(MetricsMiddleware)
