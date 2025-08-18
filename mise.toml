@@ -1,2 +1,5 @@
 [tools]
-python = "3.11"
+python = "3.11.13"
+
+[env]
+PYTHONKEYRING_BACKEND = "keyring.backends.null.Keyring"
