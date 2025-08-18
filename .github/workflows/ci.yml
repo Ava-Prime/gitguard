@@ -261,6 +261,16 @@ jobs:
         run: |
           cosign attest --yes --predicate container-sbom.spdx.json --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
           
+      - name: Verify container signature and attestation
+        run: |
+          # Verify the container signature
+          cosign verify ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+          
+          # Verify the SBOM attestation
+          cosign verify-attestation --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+          
+          echo "✅ Container signature and SBOM attestation verified successfully"
+          
       - name: Upload container artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -275,7 +285,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.4
         with:
           scan-type: 'fs'
           ignore-unfixed: true
@@ -284,7 +294,7 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
           
       - name: Run Trivy config scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.4
         with:
           scan-type: 'config'
           format: 'sarif'
