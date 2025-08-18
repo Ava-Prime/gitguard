@@ -8,9 +8,11 @@ on:
     branches: [main]
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -20,15 +22,15 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: '3.11'
           
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -76,7 +78,7 @@ jobs:
           fi
           
       - name: Secrets Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@6fb524e70da447afc7e44799c51f890bd5cc2811 # v2.3.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -179,7 +181,7 @@ jobs:
           python -m build
           
       - name: Generate SBOM with Syft
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
         with:
           path: .
           format: spdx-json
@@ -188,7 +190,7 @@ jobs:
           upload-release-assets: true
           
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: ci-artifacts
           path: |
@@ -208,16 +210,16 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
         
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
         
       - name: Log in to Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -225,7 +227,7 @@ jobs:
           
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -233,10 +235,17 @@ jobs:
             type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.title=GitGuard
+            org.opencontainers.image.description=Policy-driven Git repository governance and compliance automation
             
       - name: Build and push container
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445 # v6.5.0
         with:
           context: .
           push: true
@@ -282,7 +291,7 @@ jobs:
     name: Security & Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.24.4
@@ -308,7 +317,7 @@ jobs:
           output-file: 'security-sbom.spdx.json'
           
       - name: Vulnerability scan with Grype
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@d43cc1dfea6a99ed123bf8f3133f1797c9b44492 # v4.0.0
         with:
           path: .
           fail-build: true
@@ -324,7 +333,7 @@ jobs:
           pip-licenses --fail-on='GPL.*' --packages $(pip freeze | grep -v '\-e' | cut -d'=' -f1)
           
       - name: Upload security results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
           sarif_file: |
             trivy-fs-results.sarif

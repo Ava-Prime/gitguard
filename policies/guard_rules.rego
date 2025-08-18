@@ -316,3 +316,134 @@ deny[msg] {
     input.pr.diff_unpinned_versions == true
     msg := "Unpinned versions in requirements.txt"
 }
+
+# Enhanced lockfile and dependency management policies
+deny[msg] {
+    input.action == "merge_pr"
+    some path in input.pr.changed_paths
+    is_lockfile(path)
+    not has_corresponding_manifest_change(path)
+    not "lockfile-only" in input.pr.labels
+    msg := sprintf("Lockfile %s changed without corresponding manifest file update. Add 'lockfile-only' label if intentional.", [path])
+}
+
+deny[msg] {
+    input.action == "merge_pr"
+    some path in input.pr.changed_paths
+    is_manifest_file(path)
+    corresponding_lockfile := get_corresponding_lockfile(path)
+    corresponding_lockfile != ""
+    not corresponding_lockfile in input.pr.changed_paths
+    not "manifest-only" in input.pr.labels
+    msg := sprintf("Manifest file %s changed without updating lockfile %s. Add 'manifest-only' label if intentional.", [path, corresponding_lockfile])
+}
+
+deny[msg] {
+    input.action == "merge_pr"
+    some path in input.pr.changed_paths
+    is_lockfile(path)
+    input.pr.file_analysis[path].security_vulnerabilities > 0
+    not "security-reviewed" in input.pr.labels
+    msg := sprintf("Lockfile %s contains security vulnerabilities. Requires security team review.", [path])
+}
+
+# DCO (Developer Certificate of Origin) policy for main branch
+deny[msg] {
+    input.action == "merge_pr"
+    input.pr.target_branch == "main"
+    some commit in input.pr.commits
+    not has_dco_signoff(commit)
+    not "dco-exempt" in input.pr.labels
+    msg := sprintf("Commit %s missing DCO sign-off (Signed-off-by line). All main branch commits must include DCO.", [commit.sha[:8]])
+}
+
+deny[msg] {
+    input.action == "merge_pr"
+    input.pr.target_branch == "main"
+    some commit in input.pr.commits
+    not is_commit_signed(commit)
+    not "unsigned-commit-approved" in input.pr.labels
+    not emergency_override_approved
+    msg := sprintf("Commit %s is not cryptographically signed. Main branch requires signed commits.", [commit.sha[:8]])
+}
+
+# Helper functions for lockfile detection
+is_lockfile(path) {
+    lockfile_patterns := [
+        "package-lock.json",
+        "yarn.lock", 
+        "pnpm-lock.yaml",
+        "Pipfile.lock",
+        "poetry.lock",
+        "Gemfile.lock",
+        "composer.lock",
+        "go.sum",
+        "Cargo.lock"
+    ]
+    some pattern in lockfile_patterns
+    endswith(path, pattern)
+}
+
+is_manifest_file(path) {
+    manifest_patterns := [
+        "package.json",
+        "Pipfile",
+        "pyproject.toml",
+        "requirements.txt",
+        "Gemfile",
+        "composer.json",
+        "go.mod",
+        "Cargo.toml"
+    ]
+    some pattern in manifest_patterns
+    endswith(path, pattern)
+}
+
+get_corresponding_lockfile(manifest_path) := lockfile {
+    endswith(manifest_path, "package.json")
+    lockfile := replace(manifest_path, "package.json", "package-lock.json")
+} else := lockfile {
+    endswith(manifest_path, "package.json")
+    lockfile := replace(manifest_path, "package.json", "yarn.lock")
+} else := lockfile {
+    endswith(manifest_path, "Pipfile")
+    lockfile := replace(manifest_path, "Pipfile", "Pipfile.lock")
+} else := lockfile {
+    endswith(manifest_path, "pyproject.toml")
+    lockfile := replace(manifest_path, "pyproject.toml", "poetry.lock")
+} else := lockfile {
+    endswith(manifest_path, "requirements.txt")
+    lockfile := replace(manifest_path, "requirements.txt", "requirements.lock")
+} else := lockfile {
+    endswith(manifest_path, "Gemfile")
+    lockfile := replace(manifest_path, "Gemfile", "Gemfile.lock")
+} else := lockfile {
+    endswith(manifest_path, "composer.json")
+    lockfile := replace(manifest_path, "composer.json", "composer.lock")
+} else := lockfile {
+    endswith(manifest_path, "go.mod")
+    lockfile := replace(manifest_path, "go.mod", "go.sum")
+} else := lockfile {
+    endswith(manifest_path, "Cargo.toml")
+    lockfile := replace(manifest_path, "Cargo.toml", "Cargo.lock")
+} else := ""
+
+has_corresponding_manifest_change(lockfile_path) {
+    some manifest_path in input.pr.changed_paths
+    is_manifest_file(manifest_path)
+    get_corresponding_lockfile(manifest_path) == lockfile_path
+}
+
+# DCO validation helpers
+has_dco_signoff(commit) {
+    contains(commit.message, "Signed-off-by:")
+    regex.match(`Signed-off-by: .+ <.+@.+>`, commit.message)
+}
+
+is_commit_signed(commit) {
+    commit.verification.verified == true
+} else {
+    commit.gpg_signature.verified == true
+} else {
+    "signed" in commit.labels
+}

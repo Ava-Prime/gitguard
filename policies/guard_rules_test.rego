@@ -198,6 +198,252 @@ test_exceeds_budgets_coverage if {
     }
 }
 
+# Test data for lockfile and DCO policies
+test_pr_lockfile_without_manifest := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 301,
+        "checks_passed": true,
+        "risk_score": 0.20,
+        "labels": ["dependencies"],
+        "changed_paths": ["package-lock.json"],
+        "coverage_delta": 0.0,
+        "perf_delta": 0.0,
+        "size_category": "S"
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "gitguard[bot]"
+}
+
+test_pr_manifest_without_lockfile := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 302,
+        "checks_passed": true,
+        "risk_score": 0.20,
+        "labels": ["dependencies"],
+        "changed_paths": ["package.json"],
+        "coverage_delta": 0.0,
+        "perf_delta": 0.0,
+        "size_category": "S"
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "gitguard[bot]"
+}
+
+test_pr_lockfile_with_vulnerabilities := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 303,
+        "checks_passed": true,
+        "risk_score": 0.20,
+        "labels": ["dependencies"],
+        "changed_paths": ["package-lock.json"],
+        "coverage_delta": 0.0,
+        "perf_delta": 0.0,
+        "size_category": "S",
+        "file_analysis": {
+            "package-lock.json": {
+                "security_vulnerabilities": 3
+            }
+        }
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "gitguard[bot]"
+}
+
+test_pr_missing_dco := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 401,
+        "checks_passed": true,
+        "risk_score": 0.15,
+        "labels": ["feature"],
+        "changed_paths": ["src/feature.py"],
+        "coverage_delta": 0.1,
+        "perf_delta": 1.0,
+        "size_category": "S",
+        "target_branch": "main",
+        "commits": [
+            {
+                "sha": "abc123def456",
+                "message": "Add new feature\n\nThis commit adds a new feature.",
+                "verification": {"verified": false}
+            }
+        ]
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "developer"
+}
+
+test_pr_unsigned_commit := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 402,
+        "checks_passed": true,
+        "risk_score": 0.15,
+        "labels": ["feature"],
+        "changed_paths": ["src/feature.py"],
+        "coverage_delta": 0.1,
+        "perf_delta": 1.0,
+        "size_category": "S",
+        "target_branch": "main",
+        "commits": [
+            {
+                "sha": "def456ghi789",
+                "message": "Add new feature\n\nSigned-off-by: Developer <dev@example.com>",
+                "verification": {"verified": false},
+                "gpg_signature": {"verified": false}
+            }
+        ]
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "developer"
+}
+
+test_pr_valid_dco_and_signed := {
+    "action": "merge_pr",
+    "pr": {
+        "number": 403,
+        "checks_passed": true,
+        "risk_score": 0.15,
+        "labels": ["feature"],
+        "changed_paths": ["src/feature.py"],
+        "coverage_delta": 0.1,
+        "perf_delta": 1.0,
+        "size_category": "S",
+        "target_branch": "main",
+        "commits": [
+            {
+                "sha": "ghi789jkl012",
+                "message": "Add new feature\n\nSigned-off-by: Developer <dev@example.com>",
+                "verification": {"verified": true}
+            }
+        ]
+    },
+    "repo": {
+        "name": "example-repo",
+        "owner": "example-org",
+        "perf_budget": 5
+    },
+    "actor": "developer"
+}
+
+# Test cases for lockfile policies
+test_deny_lockfile_without_manifest if {
+    count(deny) > 0 with input as test_pr_lockfile_without_manifest
+}
+
+test_deny_manifest_without_lockfile if {
+    count(deny) > 0 with input as test_pr_manifest_without_lockfile
+}
+
+test_deny_lockfile_with_vulnerabilities if {
+    count(deny) > 0 with input as test_pr_lockfile_with_vulnerabilities
+}
+
+test_allow_lockfile_with_manifest if {
+    not count(deny) > 0 with input as {
+        "action": "merge_pr",
+        "pr": {
+            "number": 304,
+            "checks_passed": true,
+            "risk_score": 0.15,
+            "labels": ["dependencies"],
+            "changed_paths": ["package.json", "package-lock.json"],
+            "coverage_delta": 0.0,
+            "perf_delta": 0.0,
+            "size_category": "S",
+            "file_analysis": {
+                "package-lock.json": {
+                    "security_vulnerabilities": 0
+                }
+            }
+        },
+        "repo": {
+            "name": "example-repo",
+            "owner": "example-org",
+            "perf_budget": 5
+        },
+        "actor": "gitguard[bot]"
+    }
+}
+
+# Test cases for DCO policies
+test_deny_missing_dco if {
+    count(deny) > 0 with input as test_pr_missing_dco
+}
+
+test_deny_unsigned_commit if {
+    count(deny) > 0 with input as test_pr_unsigned_commit
+}
+
+test_allow_valid_dco_and_signed if {
+    not count(deny) > 0 with input as test_pr_valid_dco_and_signed
+}
+
+# Test helper functions
+test_is_lockfile_package_lock if {
+    is_lockfile("package-lock.json")
+}
+
+test_is_lockfile_yarn_lock if {
+    is_lockfile("yarn.lock")
+}
+
+test_is_manifest_package_json if {
+    is_manifest_file("package.json")
+}
+
+test_get_corresponding_lockfile_npm if {
+    get_corresponding_lockfile("package.json") == "package-lock.json"
+}
+
+test_has_dco_signoff_valid if {
+    has_dco_signoff({
+        "message": "Fix bug\n\nSigned-off-by: Developer <dev@example.com>"
+    })
+}
+
+test_has_dco_signoff_invalid if {
+    not has_dco_signoff({
+        "message": "Fix bug\n\nNo signoff here"
+    })
+}
+
+test_is_commit_signed_verified if {
+    is_commit_signed({
+        "verification": {"verified": true}
+    })
+}
+
+test_is_commit_signed_unverified if {
+    not is_commit_signed({
+        "verification": {"verified": false},
+        "gpg_signature": {"verified": false}
+    })
+}
+
 test_exceeds_budgets_performance if {
     exceeds_budgets with input as {
         "pr": {
