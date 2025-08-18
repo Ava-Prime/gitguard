@@ -1,0 +1,430 @@
+# templates/pr_page.md.j2
+---
+title: "PR #{{ pr.number }}: {{ pr.title }}"
+description: "{{ ai_summary }}"
+tags: {% for label in pr.labels %}{{ label }}{% if not loop.last %}, {% endif %}{% endfor %}
+---
+
+# PR #{{ pr.number }}: {{ pr.title }}
+
+!!! info "PR Status"
+    **Status:** {{ pr.state | title }} • **Author:** @{{ pr.author }} • **Files:** {{ pr.changed_files }} • **Risk:** {{ risk_factors.risk_level | upper }}
+
+## 🤖 AI Analysis Summary
+
+{{ ai_summary }}
+
+## 📊 Risk Assessment
+
+<div class="risk-container">
+    <div class="risk-score {{ risk_factors.risk_level }}">
+        <span class="score">{{ "%.0f" | format(risk_factors.total_risk) }}</span>
+        <span class="label">Risk Score</span>
+    </div>
+</div>
+
+| Risk Factor | Score | Impact |
+|-------------|-------|--------|
+| Size Risk | {{ "%.0f" | format(risk_factors.size_risk) }} | {{ pr.changed_files }} files, {{ pr.additions + pr.deletions }} lines |
+| Complexity Risk | {{ "%.0f" | format(risk_factors.complexity_risk) }} | {% if analysis.complexity_metrics %}High complexity functions detected{% else %}Normal complexity{% endif %} |
+| Security Risk | {{ "%.0f" | format(risk_factors.security_risk) }} | {{ analysis.security_findings | length }} findings |
+| Coverage Risk | {{ "%.0f" | format(risk_factors.coverage_risk) }} | {{ analysis.test_coverage.delta }}% coverage change |
+| Author Risk | {{ "%.0f" | format(risk_factors.author_risk) }} | {% if risk_factors.author_risk > 0 %}New contributor{% else %}Experienced contributor{% endif %} |
+| Timing Risk | {{ "%.0f" | format(risk_factors.weekend_risk) }} | {% if risk_factors.weekend_risk > 0 %}Weekend submission{% else %}Business hours{% endif %} |
+
+## 🔍 Code Changes Analysis
+
+### Files Modified ({{ files_changed | length }})
+
+{% for file in files_changed %}
+=== "{{ file.filename }}"
+    **Change Type:** {{ file.status | title }} • **Lines:** +{{ file.additions }}/-{{ file.deletions }}
+    
+    {% if file.filename in analysis.complexity_metrics %}
+    **Complexity Metrics:**
+    - Cyclomatic Complexity: {{ analysis.complexity_metrics[file.filename].cyclomatic_complexity }}
+    - Lines of Code: {{ analysis.complexity_metrics[file.filename].lines_of_code }}
+    - Maintainability Index: {{ "%.1f" | format(analysis.complexity_metrics[file.filename].maintainability_index) }}
+    {% endif %}
+    
+    {% if file.patch %}
+    ```diff
+    {{ file.patch | truncate(500) }}
+    ```
+    {% endif %}
+{% endfor %}
+
+### Symbols Changed ({{ symbols_changed | length }})
+
+{% for symbol in symbols_changed %}
+- **{{ symbol.type | title }}** `{{ symbol.name }}` in `{{ symbol.file_path }}`
+  {% if symbol.complexity %}• Complexity: {{ symbol.complexity }}{% endif %}
+  {% if symbol.line_start %}• Lines: {{ symbol.line_start }}-{{ symbol.line_end }}{% endif %}
+{% endfor %}
+
+## 🛡️ Security & Compliance
+
+{% if analysis.security_findings %}
+!!! warning "Security Findings"
+    {% for finding in analysis.security_findings %}
+    - **{{ finding.severity | upper }}**: {{ finding.description }}
+      - File: `{{ finding.file }}`{% if finding.line %} (line {{ finding.line }}){% endif %}
+      - Tool: {{ finding.tool }}
+    {% endfor %}
+{% else %}
+!!! success "Security Check"
+    ✅ No security concerns detected
+{% endif %}
+
+## 📈 Test Coverage Impact
+
+{% set coverage = analysis.test_coverage %}
+{% if coverage.delta != 0 %}
+Coverage change: **{{ "+" if coverage.delta > 0 else "" }}{{ "%.1f" | format(coverage.delta) }}%**
+
+Current coverage: **{{ "%.1f" | format(coverage.total_coverage) }}%**
+{% else %}
+No significant coverage changes detected.
+{% endif %}
+
+## 🎯 Governance Evaluation
+
+{% if analysis.policy_results %}
+| Policy | Result | Reason |
+|--------|--------|--------|
+{% for policy in analysis.policy_results %}
+| {{ policy.name }} | {{ "✅ PASS" if policy.passed else "❌ FAIL" }} | {{ policy.reason }} |
+{% endfor %}
+{% endif %}
+
+{% if analysis.adrs_impacted %}
+## 📋 Architecture Impact
+
+This PR impacts the following Architecture Decision Records:
+
+{% for adr in analysis.adrs_impacted %}
+- [ADR-{{ adr.number }}: {{ adr.title }}](../governance/adrs/{{ adr.number }}.md)
+  - **Impact:** {{ adr.impact_type }}
+  - **Status:** {{ adr.status }}
+{% endfor %}
+{% endif %}
+
+## 🔗 Knowledge Connections
+
+### Related Changes
+{% if analysis.related_prs %}
+{% for related_pr in analysis.related_prs %}
+- [PR #{{ related_pr.number }}: {{ related_pr.title }}]({{ related_pr.number }}.md) 
+  ({{ related_pr.shared_files }} shared files)
+{% endfor %}
+{% else %}
+No directly related PRs found.
+{% endif %}
+
+### Suggested Reviewers
+{% if analysis.suggested_reviewers %}
+Based on code expertise analysis:
+{% for reviewer in analysis.suggested_reviewers %}
+- **@{{ reviewer.username }}** ({{ reviewer.expertise_score }} related changes)
+{% endfor %}
+{% else %}
+Use default CODEOWNERS for review assignment.
+{% endif %}
+
+---
+
+<style>
+.risk-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.risk-score {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    min-width: 120px;
+}
+
+.risk-score.low {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.risk-score.medium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.risk-score.high {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.risk-score .score {
+    display: block;
+    font-size: 2.5em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.risk-score .label {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+</style>
+
+*Generated by GitGuard Codex at {{ timestamp }}*
+
+---
+
+# templates/repo_overview.md.j2
+---
+title: "{{ repo }} - Repository Overview"  
+description: "Engineering intelligence dashboard for {{ repo }}"
+---
+
+# {{ repo }} - Engineering Intelligence
+
+!!! info "Repository Health"
+    **Health Score:** {{ "%.1f" | format(metrics.health_score or 0) }}/100 • **Risk Level:** {{ metrics.avg_risk_level or "Unknown" }} • **Last Updated:** {{ last_updated }}
+
+## 📊 Key Metrics
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.total_prs or 0 }}</div>
+        <div class="metric-label">Total PRs</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value">{{ "%.1f" | format(metrics.avg_risk_score or 0) }}</div>
+        <div class="metric-label">Avg Risk Score</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.merged_prs or 0 }}</div>
+        <div class="metric-label">Merged PRs</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value">{{ metrics.recent_prs or 0 }}</div>
+        <div class="metric-label">This Week</div>
+    </div>
+</div>
+
+## 🚀 Recent Activity
+
+{% for activity in recent_activity %}
+### [PR #{{ activity.number }}: {{ activity.title }}](prs/{{ activity.number }}.md)
+**Author:** @{{ activity.author }} • **Risk:** {{ "%.0f" | format(activity.risk_score) }} • **Status:** {{ activity.state | title }}
+{% endfor %}
+
+## 🧠 Knowledge Graph Stats
+
+{% if analysis.symbols_changed %}
+**Symbols Analyzed:** {{ analysis.symbols_changed | length }}
+**Languages Detected:** {{ analysis.languages | join(", ") }}
+**Dependencies Tracked:** {{ analysis.dependencies | length }}
+{% endif %}
+
+## 🎯 Governance Overview
+
+### Active Policies
+- **Release Window Enforcement:** {% if metrics.weekend_freeze_active %}🔒 Active{% else %}✅ Open{% endif %}
+- **Auto-merge Threshold:** Risk score < {{ metrics.automerge_threshold or 30 }}
+- **Required Reviews:** {{ metrics.required_reviewers or 1 }} minimum
+
+### Compliance Rate
+**Policy Compliance:** {{ "%.1f" | format(metrics.compliance_rate or 100) }}% (last 30 days)
+
+---
+
+<style>
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2.5em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.metric-label {
+    font-size: 0.9em;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+</style>
+
+*Auto-generated by GitGuard Codex*
+
+---
+
+# templates/symbol_page.md.j2
+---
+title: "{{ symbol.type | title }}: {{ symbol.name }}"
+description: "Code symbol documentation and analysis"
+---
+
+# {{ symbol.type | title }}: `{{ symbol.name }}`
+
+!!! note "Symbol Information"
+    **Type:** {{ symbol.type | title }} • **File:** `{{ symbol.file_path }}` • **Lines:** {{ symbol.line_start }}-{{ symbol.line_end }}
+
+## 📊 Complexity Analysis
+
+{% if symbol.complexity %}
+- **Cyclomatic Complexity:** {{ symbol.complexity }}
+- **Maintainability:** {{ symbol.maintainability_index or "Not calculated" }}
+- **Test Coverage:** {{ symbol.test_coverage or "Unknown" }}%
+{% endif %}
+
+## 🔗 Dependencies
+
+### Called By
+{% if symbol.callers %}
+{% for caller in symbol.callers %}
+- [`{{ caller.name }}`]({{ caller.name }}.md) in `{{ caller.file_path }}`
+{% endfor %}
+{% else %}
+No callers detected.
+{% endif %}
+
+### Calls
+{% if symbol.calls %}
+{% for called in symbol.calls %}
+- [`{{ called.name }}`]({{ called.name }}.md) in `{{ called.file_path }}`
+{% endfor %}
+{% else %}
+No function calls detected.
+{% endif %}
+
+## 📝 Recent Changes
+
+Recent PRs that modified this symbol:
+
+{% if symbol.recent_changes %}
+{% for change in symbol.recent_changes %}
+- [PR #{{ change.pr_number }}: {{ change.pr_title }}](../prs/{{ change.pr_number }}.md)
+  - **Date:** {{ change.date }}
+  - **Author:** @{{ change.author }}
+  - **Change Type:** {{ change.change_type }}
+{% endfor %}
+{% else %}
+No recent changes found.
+{% endif %}
+
+## 🧪 Test Coverage
+
+{% if symbol.tests %}
+**Tests covering this symbol:**
+{% for test in symbol.tests %}
+- `{{ test.name }}` in `{{ test.file_path }}`
+{% endfor %}
+{% else %}
+⚠️ No tests found covering this symbol.
+{% endif %}
+
+---
+
+*Last analyzed: {{ timestamp }}*
+
+---
+
+# templates/governance_page.md.j2
+---
+title: "Governance Dashboard"
+description: "Policies, ADRs, and compliance overview"
+---
+
+# 🛡️ Governance Dashboard
+
+## 📋 Active Policies
+
+{% for policy in policies %}
+### {{ policy.name }}
+
+**Enforcement Level:** {{ policy.enforcement_level | title }}
+**Success Rate:** {{ "%.1f" | format(policy.success_rate) }}% (last 30 days)
+
+{{ policy.description }}
+
+```rego
+{{ policy.rego_snippet }}
+```
+
+**Recent Evaluations:**
+{% for eval in policy.recent_evaluations %}
+- [PR #{{ eval.pr_number }}](../prs/{{ eval.pr_number }}.md): {{ "✅ PASS" if eval.result == "pass" else "❌ FAIL" }} - {{ eval.reason }}
+{% endfor %}
+
+---
+{% endfor %}
+
+## 📄 Architecture Decision Records
+
+{% for adr in adrs %}
+### [ADR-{{ adr.number }}: {{ adr.title }}](adrs/{{ adr.number }}.md)
+
+**Status:** {{ adr.status | title }} • **Date:** {{ adr.decision_date }} • **Impact Areas:** {{ adr.impact_areas | join(", ") }}
+
+{{ adr.summary }}
+
+**Recent Related PRs:**
+{% for pr in adr.related_prs %}
+- [PR #{{ pr.number }}: {{ pr.title }}](../prs/{{ pr.number }}.md) - {{ pr.impact_type }}
+{% endfor %}
+
+---
+{% endfor %}
+
+## 📈 Compliance Metrics
+
+### Policy Compliance Trends
+
+```mermaid
+xychart-beta
+    title "Policy Compliance Rate"
+    x-axis [Week1, Week2, Week3, Week4]
+    y-axis "Compliance %" 0 --> 100
+    line [{{ compliance_trend | map(attribute='rate') | join(', ') }}]
+```
+
+### Risk Distribution
+
+| Risk Level | Count | Percentage |
+|------------|-------|------------|
+| Low (0-30) | {{ risk_distribution.low }} | {{ "%.1f" | format(risk_distribution.low_pct) }}% |
+| Medium (31-70) | {{ risk_distribution.medium }} | {{ "%.1f" | format(risk_distribution.medium_pct) }}% |
+| High (71-100) | {{ risk_distribution.high }} | {{ "%.1f" | format(risk_distribution.high_pct) }}% |
+
+## 🚦 Release Windows
+
+{% if release_windows %}
+### Current Release Window Status
+
+{% for window in release_windows %}
+**{{ window.name }}:** {{ "🔒 BLOCKED" if window.active else "✅ OPEN" }}
+- **Schedule:** {{ window.schedule }}
+- **Timezone:** {{ window.timezone }}
+- **Next Change:** {{ window.next_change }}
+
+{% endfor %}
+{% endif %}
+
+---
+
+*Governance data updated in real-time by GitGuard Codex*

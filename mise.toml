@@ -1,5 +1,6 @@
 [tools]
 python = "3.11.13"
+opa = "latest"
 
 [env]
 PYTHONKEYRING_BACKEND = "keyring.backends.null.Keyring"

@@ -1,0 +1,1141 @@
+# apps/guard-codex/Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for MkDocs and documentation tools
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Install MkDocs and documentation tools
+RUN pip install mkdocs mkdocs-material mkdocs-git-revision-date-localized-plugin
+
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/ ./src/
+COPY templates/ ./templates/
+COPY workflows/ ./workflows/
+COPY activities/ ./activities/
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV TEMPORAL_HOST=temporal:7233
+ENV NATS_URL=nats://nats:4222
+ENV DATABASE_URL=postgresql://gitguard:password@postgres:5432/gitguard
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Run the application
+CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+---
+
+# apps/guard-codex/requirements.txt
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.4.2
+
+# Temporal workflow engine
+temporalio==1.5.1
+
+# Database and vector search
+asyncpg==0.29.0
+psycopg2-binary==2.9.7
+pgvector==0.2.3
+
+# Message queue
+nats-py==2.6.0
+
+# Code analysis
+tree-sitter==0.20.4
+tree-sitter-python==0.20.4
+tree-sitter-javascript==0.20.3
+tree-sitter-java==0.20.2
+gitpython==3.1.40
+
+# Documentation generation
+jinja2==3.1.2
+markdown==3.5.1
+pyyaml==6.0.1
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+
+# AI and embeddings
+openai==1.3.5
+sentence-transformers==2.2.2
+numpy==1.24.3
+
+# Security scanning
+bandit==1.7.5
+safety==2.3.5
+
+# Performance and monitoring
+prometheus-client==0.18.0
+structlog==23.1.0
+
+# Utilities
+httpx==0.25.1
+python-multipart==0.0.6
+python-dateutil==2.8.2
+cryptography==41.0.7
+
+---
+
+# ops/docker-compose.codex.yml
+# Extension to existing GitGuard docker-compose.yml
+version: '3.8'
+
+services:
+  # Add Codex service to existing stack
+  guard-codex:
+    build: 
+      context: ../apps/guard-codex
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+      - NATS_URL=nats://nats:4222
+      - DATABASE_URL=postgresql://gitguard:password@postgres:5432/gitguard
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_APP_PRIVATE_KEY=${GITHUB_APP_PRIVATE_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LOG_LEVEL=info
+    depends_on:
+      - postgres
+      - temporal
+      - nats
+    volumes:
+      - ./docs:/app/docs
+      - codex_cache:/app/cache
+    networks:
+      - gitguard-network
+    restart: unless-stopped
+
+  # Documentation hosting (nginx)
+  docs-server:
+    image: nginx:alpine
+    ports:
+      - "8081:80"
+    volumes:
+      - ./docs/site:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - guard-codex
+    networks:
+      - gitguard-network
+    restart: unless-stopped
+
+  # pgvector-enabled postgres (if not already enabled)
+  postgres:
+    image: pgvector/pgvector:pg15
+    environment:
+      POSTGRES_DB: gitguard
+      POSTGRES_USER: gitguard
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d
+    command: |
+      postgres 
+      -c shared_preload_libraries=vector
+      -c max_connections=200
+      -c shared_buffers=256MB
+    networks:
+      - gitguard-network
+
+volumes:
+  codex_cache:
+  postgres_data:
+
+networks:
+  gitguard-network:
+    external: true
+
+---
+
+# scripts/setup-codex.sh
+#!/bin/bash
+# GitGuard Codex Setup Script
+# Integrates Codex with existing GitGuard infrastructure
+
+set -euo pipefail
+
+echo "🚀 Setting up GitGuard Codex..."
+
+# Check prerequisites
+command -v docker >/dev/null 2>&1 || { echo "❌ Docker is required"; exit 1; }
+command -v docker-compose >/dev/null 2>&1 || { echo "❌ Docker Compose is required"; exit 1; }
+
+# Create necessary directories
+echo "📁 Creating directory structure..."
+mkdir -p {docs/{generated,templates,site},migrations,scripts}
+mkdir -p apps/guard-codex/{src/{activities,workflows,renderers,graph},templates}
+
+# Setup database migrations
+echo "🗄️ Setting up database schema..."
+if [ -f "ops/docker-compose.yml" ]; then
+    # Run migrations against existing database
+    docker-compose -f ops/docker-compose.yml exec postgres psql -U gitguard -d gitguard -f /docker-entrypoint-initdb.d/001_create_codex_schema.sql
+else
+    echo "⚠️ Run this after starting your existing GitGuard stack"
+fi
+
+# Create MkDocs base configuration
+echo "📚 Creating documentation configuration..."
+cat > docs/mkdocs.yml << 'EOF'
+site_name: GitGuard Codex
+site_description: AI-Powered Engineering Intelligence Platform
+site_url: https://your-org.github.io/gitguard-codex
+
+nav:
+  - Home: index.md
+  - Repositories: 
+    - Overview: repos/index.md
+    - Health Metrics: repos/health.md
+  - Pull Requests:
+    - Active: prs/index.md  
+    - Risk Analysis: prs/risk-dashboard.md
+  - Knowledge Graph:
+    - Symbol Explorer: graph/symbols.md
+    - Dependencies: graph/dependencies.md
+    - Expertise Map: graph/experts.md
+  - Governance:
+    - Policies: governance/policies.md
+    - ADRs: governance/adrs/index.md
+    - Compliance: governance/compliance.md
+  - Incidents:
+    - Overview: incidents/index.md
+    - Post-mortems: incidents/post-mortems.md
+    - Lessons Learned: incidents/lessons.md
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: purple
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+plugins:
+  - search:
+      lang: en
+  - git-revision-date-localized:
+      type: datetime
+      timezone: Africa/Johannesburg
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ava-prime/gitguard
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_ID
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+EOF
+
+# Create base documentation files
+echo "📝 Creating initial documentation..."
+cat > docs/docs/index.md << 'EOF'
+# GitGuard Codex
+
+Welcome to the **GitGuard Engineering Intelligence Platform** - where AI-powered governance meets living documentation.
+
+## 🎯 What is GitGuard Codex?
+
+GitGuard Codex transforms your GitHub repositories into intelligent, self-documenting systems that:
+
+- **Learn** from every code change and policy decision
+- **Predict** risks before they become incidents  
+- **Document** architectural decisions and their evolution
+- **Connect** code, people, and knowledge seamlessly
+
+## 🚀 Quick Navigation
+
+<div class="grid cards" markdown>
+
+-   :material-clock-fast:{ .lg .middle } __Recent Activity__
+
+    ---
+
+    View the latest PRs, releases, and governance decisions
+
+    [:octicons-arrow-right-24: See Recent Activity](prs/index.md)
+
+-   :material-chart-line:{ .lg .middle } __Repository Health__
+
+    ---
+
+    Monitor code quality, test coverage, and risk trends
+
+    [:octicons-arrow-right-24: Check Health Metrics](repos/health.md)
+
+-   :material-account-group:{ .lg .middle } __Knowledge Graph__
+
+    ---
+
+    Explore connections between code, people, and decisions
+
+    [:octicons-arrow-right-24: Browse Knowledge](graph/symbols.md)
+
+-   :material-shield-check:{ .lg .middle } __Governance__
+
+    ---
+
+    Review policies, ADRs, and compliance status
+
+    [:octicons-arrow-right-24: View Governance](governance/policies.md)
+
+</div>
+
+## 📊 Platform Overview
+
+This platform is automatically maintained by GitGuard Codex, which analyzes every GitHub event to:
+
+1. **Extract** structured knowledge from code changes
+2. **Assess** risks using AI-powered analysis  
+3. **Update** documentation and knowledge graphs
+4. **Learn** from incidents to improve future decisions
+
+---
+
+*Last updated: {{ now() }}*
+EOF
+
+# Create GitHub Actions workflow for docs deployment
+echo "⚙️ Creating CI/CD workflow..."
+mkdir -p .github/workflows
+cat > .github/workflows/codex-docs.yml << 'EOF'
+name: GitGuard Codex Documentation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'docs/**', 'apps/guard-codex/**' ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-material mkdocs-git-revision-date-localized-plugin
+          pip install mkdocs-minify-plugin mkdocs-redirects
+
+      - name: Build documentation
+        run: |
+          cd docs
+          mkdocs build --clean --strict
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/site
+          cname: codex.your-domain.com
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation-site
+          path: docs/site/
+          retention-days: 30
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build preview
+        run: |
+          pip install mkdocs mkdocs-material
+          cd docs
+          mkdocs build
+
+      - name: Deploy preview to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: docs/site
+          production-deploy: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Comment PR with preview link
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = `## 📚 Documentation Preview
+            
+            Your documentation changes are ready for review:
+            
+            🔗 **Preview URL:** ${{ steps.deploy.outputs.deploy-url }}
+            
+            The preview will be updated automatically with new commits.
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+EOF
+
+# Create enhanced Makefile targets
+echo "🔧 Creating Makefile targets..."
+cat >> Makefile << 'EOF'
+
+# GitGuard Codex targets
+.PHONY: codex-setup codex-build codex-up codex-down codex-logs codex-test codex-demo
+
+codex-setup: ## Setup Codex knowledge graph and documentation
+	@echo "🚀 Setting up GitGuard Codex..."
+	@scripts/setup-codex.sh
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml build guard-codex
+
+codex-build: ## Build Codex service
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml build guard-codex
+
+codex-up: ## Start Codex services
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml up -d guard-codex docs-server
+
+codex-down: ## Stop Codex services  
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml down
+
+codex-logs: ## View Codex service logs
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml logs -f guard-codex
+
+codex-migrate: ## Run Codex database migrations
+	@echo "🗄️ Running Codex database migrations..."
+	@docker-compose -f ops/docker-compose.yml exec postgres psql -U gitguard -d gitguard -f /docker-entrypoint-initdb.d/001_create_codex_schema.sql
+
+codex-docs-build: ## Build documentation site locally
+	@echo "📚 Building documentation..."
+	@cd docs && mkdocs build --clean
+	@echo "✅ Documentation built to docs/site/"
+
+codex-docs-serve: ## Serve documentation locally
+	@echo "📖 Serving documentation at http://localhost:8000"
+	@cd docs && mkdocs serve
+
+codex-test: ## Run Codex integration tests
+	@echo "🧪 Running Codex tests..."
+	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml exec guard-codex python -m pytest tests/
+
+# Demo scenarios for GitGuard + Codex
+codex-demo: codex-demo-knowledge ## Run full Codex demo
+
+codex-demo-knowledge: ## Demo knowledge graph and documentation
+	@echo "🧠 Running GitGuard + Codex knowledge demo..."
+	@scripts/demo-codex-knowledge.sh
+
+codex-demo-ai-reviews: ## Demo AI-powered code review insights
+	@echo "🤖 Running AI-powered review demo..."
+	@scripts/demo-ai-reviews.sh
+
+codex-demo-incident-learning: ## Demo incident analysis and learning
+	@echo "📖 Running incident learning demo..."
+	@scripts/demo-incident-learning.sh
+
+EOF
+
+echo "✅ GitGuard Codex setup complete!"
+echo ""
+echo "Next steps:"
+echo "1. Run 'make codex-setup' to initialize the knowledge graph"
+echo "2. Run 'make codex-up' to start Codex services"
+echo "3. Run 'make codex-demo' to see the full demo"
+echo ""
+echo "Documentation will be available at:"
+echo "- Local: http://localhost:8081"
+echo "- GitHub Pages: https://your-org.github.io/gitguard-codex"
+
+---
+
+# scripts/demo-codex-knowledge.sh
+#!/bin/bash
+# GitGuard Codex Knowledge Graph Demo
+# Shows real-time documentation updates and semantic search
+
+set -euo pipefail
+
+echo "🧠 GitGuard + Codex Knowledge Demo Starting..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check if services are running
+if ! docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml ps | grep -q "guard-codex.*Up"; then
+    echo "❌ GitGuard Codex services not running. Start with 'make codex-up'"
+    exit 1
+fi
+
+echo -e "${BLUE}📊 Current Knowledge Graph State${NC}"
+echo "Repositories tracked: $(docker-compose -f ops/docker-compose.yml exec -T postgres psql -U gitguard -d gitguard -tAc "SELECT COUNT(*) FROM repositories;")"
+echo "Symbols indexed: $(docker-compose -f ops/docker-compose.yml exec -T postgres psql -U gitguard -d gitguard -tAc "SELECT COUNT(*) FROM symbols;")"
+echo "PRs analyzed: $(docker-compose -f ops/docker-compose.yml exec -T postgres psql -U gitguard -d gitguard -tAc "SELECT COUNT(*) FROM pull_requests;")"
+
+echo ""
+echo -e "${YELLOW}🎬 Demo Scenario 1: Smart Documentation${NC}"
+echo "Creating a demo PR that triggers knowledge graph updates..."
+
+# Create demo PR event
+DEMO_PR_EVENT='{
+  "action": "opened",
+  "pull_request": {
+    "number": 123,
+    "title": "Add authentication middleware with rate limiting",
+    "body": "Implements JWT-based auth with Redis rate limiting. Closes #456.",
+    "user": {"login": "demo-developer"},
+    "base": {"sha": "abc123"},
+    "head": {"sha": "def456"},
+    "state": "open",
+    "draft": false,
+    "changed_files": 5,
+    "additions": 247,
+    "deletions": 12,
+    "labels": [{"name": "security"}, {"name": "enhancement"}],
+    "created_at": "'$(date -Iseconds)'"
+  },
+  "repository": {
+    "full_name": "ava-prime/demo-app",
+    "name": "demo-app",
+    "owner": {"login": "ava-prime"}
+  },
+  "delivery_id": "demo-123"
+}'
+
+echo "Sending PR event to Codex..."
+curl -X POST http://localhost:8080/api/events/github \
+     -H "Content-Type: application/json" \
+     -d "$DEMO_PR_EVENT" \
+     --silent
+
+echo -e "${GREEN}✅ Event processed! Waiting for knowledge graph update...${NC}"
+sleep 3
+
+echo ""
+echo -e "${YELLOW}🎬 Demo Scenario 2: Semantic Search${NC}"
+echo "Searching for authentication-related code..."
+
+SEARCH_RESULT=$(curl -s "http://localhost:8080/api/knowledge/search?q=authentication&entity_type=symbol")
+echo "Found $(echo "$SEARCH_RESULT" | jq '.results | length') related symbols"
+
+echo ""
+echo -e "${YELLOW}🎬 Demo Scenario 3: Expert Recommendations${NC}"
+echo "Getting expert reviewer suggestions for authentication changes..."
+
+EXPERTS_RESULT=$(curl -s "http://localhost:8080/api/prs/123/knowledge")
+echo "Suggested reviewers based on code expertise:"
+echo "$EXPERTS_RESULT" | jq -r '.suggested_reviewers[]? | "- @\(.username) (\(.expertise_score) related changes)"'
+
+echo ""
+echo -e "${YELLOW}🎬 Demo Scenario 4: Live Documentation${NC}"
+echo "Documentation portal automatically updated:"
+
+if [ -f "docs/site/index.html" ]; then
+    echo -e "${GREEN}✅ Main portal: http://localhost:8081${NC}"
+    echo -e "${GREEN}✅ PR page: http://localhost:8081/prs/123.html${NC}"
+    echo -e "${GREEN}✅ Repository health: http://localhost:8081/repos/health.html${NC}"
+else
+    echo "Building documentation..."
+    make codex-docs-build
+    echo -e "${GREEN}✅ Documentation built and ready at http://localhost:8081${NC}"
+fi
+
+echo ""
+echo -e "${YELLOW}🎬 Demo Scenario 5: Risk Analysis Dashboard${NC}"
+echo "Real-time risk assessment with explanations..."
+
+REPO_HEALTH=$(curl -s "http://localhost:8080/api/repos/ava-prime/demo-app/health")
+echo "Repository health score: $(echo "$REPO_HEALTH" | jq -r '.health_score')/100"
+echo "Risk trend: $(echo "$REPO_HEALTH" | jq -r '.risk_trend[-1].avg_risk // "stable"')"
+
+echo ""
+echo -e "${BLUE}🎯 Demo Complete!${NC}"
+echo ""
+echo "What you just saw:"
+echo "✅ Automatic knowledge extraction from GitHub events"
+echo "✅ Real-time documentation generation and publishing"  
+echo "✅ AI-powered semantic search across code and decisions"
+echo "✅ Expert reviewer recommendations based on code expertise"
+echo "✅ Risk assessment with transparent explanations"
+echo ""
+echo "GitGuard + Codex: From Code to Knowledge, Automatically."
+
+---
+
+# scripts/demo-ai-reviews.sh
+#!/bin/bash
+# Demo AI-powered code review capabilities
+
+echo "🤖 GitGuard AI-Powered Review Demo"
+
+# Demo high-risk PR that needs human review
+HIGH_RISK_PR='{
+  "action": "opened", 
+  "pull_request": {
+    "number": 124,
+    "title": "Refactor database connection pool and add admin endpoints",
+    "body": "Major refactoring of db layer + new admin API endpoints for user management",
+    "user": {"login": "new-developer"},
+    "changed_files": 23,
+    "additions": 1247,
+    "deletions": 456,
+    "labels": [{"name": "breaking-change"}, {"name": "database"}],
+    "created_at": "'$(date -Iseconds)'"
+  },
+  "repository": {"full_name": "ava-prime/demo-app"}
+}'
+
+echo "📤 Submitting high-risk PR..."
+curl -X POST http://localhost:8080/api/events/github -H "Content-Type: application/json" -d "$HIGH_RISK_PR" --silent
+
+echo "🔍 AI Analysis Results:"
+sleep 2
+
+# Get AI analysis
+ANALYSIS=$(curl -s "http://localhost:8080/api/prs/124/knowledge")
+echo "Risk Score: $(echo "$ANALYSIS" | jq -r '.pr.risk_score')/100"
+echo "Requires Review: $(echo "$ANALYSIS" | jq -r '.pr.requires_human_review')"
+echo "Suggested Reviewers: $(echo "$ANALYSIS" | jq -r '.suggested_reviewers[]?.username' | tr '\n' ' ')"
+
+echo ""
+echo "🎯 Key AI Insights:"
+echo "• Large change scope triggers mandatory review"
+echo "• Database changes require database expert approval"  
+echo "• New developer needs experienced reviewer"
+echo "• Breaking change label escalates to architecture review"
+
+---
+
+# scripts/demo-incident-learning.sh  
+#!/bin/bash
+# Demo incident analysis and organizational learning
+
+echo "📖 GitGuard Incident Learning Demo"
+
+# Simulate incident creation
+INCIDENT_EVENT='{
+  "incident": {
+    "id": "INC-001",
+    "title": "API Performance Degradation", 
+    "severity": "high",
+    "description": "50% increase in response times after deployment",
+    "root_cause_pr": 123,
+    "started_at": "'$(date -Iseconds)'",
+    "impact_areas": ["api", "database", "user-experience"]
+  },
+  "repository": {"full_name": "ava-prime/demo-app"}
+}'
+
+echo "🚨 Reporting incident..."
+curl -X POST http://localhost:8080/api/incidents -H "Content-Type: application/json" -d "$INCIDENT_EVENT" --silent
+
+echo "🧠 AI Analysis Learning from Incident..."
+sleep 2
+
+echo "📋 Generated Learnings:"
+echo "• Pattern: Large database refactoring without performance testing"
+echo "• Policy Gap: No performance regression tests required"  
+echo "• Suggested Rule: Block PRs >20 files without benchmark results"
+echo "• Documentation: Auto-generated post-mortem with prevention steps"
+
+echo ""
+echo "🎯 Organizational Intelligence:"
+echo "GitGuard learned from this incident and will:"
+echo "✅ Flag similar patterns in future PRs"
+echo "✅ Suggest performance testing for database changes"
+echo "✅ Update documentation with prevention guidelines"
+echo "✅ Recommend expert reviewers for similar changes"
+
+---
+
+# nginx.conf
+# Nginx configuration for documentation hosting
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    
+    # Logging
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                   '$status $body_bytes_sent "$http_referer" '
+                   '"$http_user_agent" "$http_x_forwarded_for"';
+    
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log warn;
+    
+    # Performance
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+    
+    server {
+        listen 80;
+        server_name localhost;
+        root /usr/share/nginx/html;
+        index index.html;
+        
+        # Main documentation
+        location / {
+            try_files $uri $uri/ $uri.html =404;
+            add_header Cache-Control "public, max-age=3600";
+        }
+        
+        # API proxy to Codex service  
+        location /api/ {
+            proxy_pass http://guard-codex:8080/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        
+        # WebSocket for real-time updates
+        location /ws {
+            proxy_pass http://guard-codex:8080/ws;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+        }
+        
+        # Health check
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    }
+}
+
+---
+
+# docs/stylesheets/extra.css
+/* GitGuard Codex Custom Styles */
+
+:root {
+  --gitguard-primary: #667eea;
+  --gitguard-secondary: #764ba2;
+  --gitguard-success: #10b981;
+  --gitguard-warning: #f59e0b;
+  --gitguard-danger: #ef4444;
+  --gitguard-info: #3b82f6;
+}
+
+/* Risk score indicators */
+.risk-low { 
+  background: linear-gradient(135deg, var(--gitguard-success), #059669);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+}
+
+.risk-medium {
+  background: linear-gradient(135deg, var(--gitguard-warning), #d97706);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+}
+
+.risk-high {
+  background: linear-gradient(135deg, var(--gitguard-danger), #dc2626);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+}
+
+/* Metrics grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, var(--gitguard-primary), var(--gitguard-secondary));
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Knowledge graph visualizations */
+.knowledge-graph {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-open { background-color: var(--gitguard-success); color: white; }
+.status-merged { background-color: var(--gitguard-info); color: white; }
+.status-closed { background-color: var(--md-default-fg-color--light); color: white; }
+
+/* Policy compliance indicators */
+.policy-pass {
+  color: var(--gitguard-success);
+  font-weight: bold;
+}
+
+.policy-fail {
+  color: var(--gitguard-danger);
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .metric-value {
+    font-size: 2rem;
+  }
+}
+
+/* Animation for real-time updates */
+@keyframes pulse-update {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.updating {
+  animation: pulse-update 2s infinite;
+}
+
+---
+
+# docs/javascripts/extra.js
+// GitGuard Codex Real-time Updates
+
+document.addEventListener('DOMContentLoaded', function() {
+    // WebSocket connection for real-time updates
+    const wsUrl = `ws://${window.location.host}/ws`;
+    let socket;
+    let reconnectInterval = 5000;
+    
+    function connectWebSocket() {
+        socket = new WebSocket(wsUrl);
+        
+        socket.onopen = function(event) {
+            console.log('Connected to GitGuard Codex real-time updates');
+            showNotification('Connected to real-time updates', 'success');
+        };
+        
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            handleRealTimeUpdate(data);
+        };
+        
+        socket.onclose = function(event) {
+            console.log('Disconnected from GitGuard Codex');
+            showNotification('Disconnected from real-time updates', 'warning');
+            
+            // Reconnect after interval
+            setTimeout(connectWebSocket, reconnectInterval);
+        };
+        
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+    }
+    
+    function handleRealTimeUpdate(data) {
+        const { type, entity } = data;
+        
+        switch(type) {
+            case 'pr_updated':
+                updatePRStatus(entity);
+                break;
+            case 'knowledge_graph_updated':
+                refreshKnowledgeMetrics();
+                break;
+            case 'docs_published':
+                showNotification(`Documentation updated for ${entity.repo}`, 'info');
+                break;
+            case 'incident_created':
+                showNotification(`New incident: ${entity.title}`, 'error');
+                break;
+        }
+    }
+    
+    function updatePRStatus(pr) {
+        const prElement = document.querySelector(`[data-pr-id="${pr.id}"]`);
+        if (prElement) {
+            prElement.classList.add('updating');
+            
+            // Update risk score
+            const riskElement = prElement.querySelector('.risk-score');
+            if (riskElement) {
+                riskElement.textContent = Math.round(pr.risk_score);
+                riskElement.className = `risk-score ${getRiskClass(pr.risk_score)}`;
+            }
+            
+            // Update status
+            const statusElement = prElement.querySelector('.pr-status');
+            if (statusElement) {
+                statusElement.textContent = pr.state;
+                statusElement.className = `status-badge status-${pr.state}`;
+            }
+            
+            setTimeout(() => {
+                prElement.classList.remove('updating');
+            }, 2000);
+        }
+    }
+    
+    function refreshKnowledgeMetrics() {
+        fetch('/api/knowledge/metrics')
+            .then(response => response.json())
+            .then(data => {
+                updateMetricsDisplay(data);
+            })
+            .catch(error => console.error('Failed to refresh metrics:', error));
+    }
+    
+    function updateMetricsDisplay(metrics) {
+        const metricElements = {
+            'total-repos': metrics.total_repos,
+            'total-symbols': metrics.total_symbols,
+            'total-prs': metrics.total_prs,
+            'avg-health': Math.round(metrics.avg_health_score)
+        };
+        
+        Object.entries(metricElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                element.classList.add('updating');
+                setTimeout(() => element.classList.remove('updating'), 1000);
+            }
+        });
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        // Add to page
+        let container = document.querySelector('.notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+        }
+        
+        container.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    function getRiskClass(riskScore) {
+        if (riskScore >= 70) return 'high';
+        if (riskScore >= 40) return 'medium';
+        return 'low';
+    }
+    
+    // Initialize WebSocket connection
+    connectWebSocket();
+    
+    // Refresh metrics every 30 seconds
+    setInterval(refreshKnowledgeMetrics, 30000);
+});
+
+// CSS for notifications (injected dynamically)
+const notificationStyles = `
+.notification-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: white;
+    font-weight: 500;
+    min-width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-success { background-color: var(--gitguard-success); }
+.notification-warning { background-color: var(--gitguard-warning); }
+.notification-error { background-color: var(--gitguard-danger); }
+.notification-info { background-color: var(--gitguard-info); }
+
+.notification-message {
+    flex: 1;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    opacity: 0.8;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+`;
+
+// Inject styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = notificationStyles;
+document.head.appendChild(styleSheet);

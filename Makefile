@@ -2,6 +2,7 @@ SHELL := /usr/bin/env bash
 APP ?= app.main:app
 PY := .venv/bin/python
 PIP := .venv/bin/pip
+POLICY_DIR ?= policies
 
 .PHONY: help venv sync fmt lint type test run dev clean
 
@@ -45,7 +46,21 @@ test:
 run:
 	$(PY) -m uvicorn $(APP) --reload --host 0.0.0.0 --port 8000
 
-dev: fmt lint type test
+dev: fmt lint type test pre-commit
+	@echo "✅ Development workflow complete"
+
+pre-commit: ## Run pre-commit hooks on all files
+	@echo "🔍 Running pre-commit hooks..."
+	pre-commit run --all-files
+
+policy-test: ## Run OPA policy tests
+	@command -v opa >/dev/null || (echo "Install opa (e.g. via mise: mise use opa@latest)" && exit 1)
+	@opa test $(POLICY_DIR) -v
+
+cov: ## Run tests with coverage report
+	$(PY) -m pytest --cov=app --cov-report=term-missing
+
+check: fmt lint type test policy-test ## Run all quality checks including policy tests
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache **/__pycache__
