@@ -22,6 +22,13 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
         finally:
             dur_ms = (time.perf_counter() - start) * 1000
             logger.info(**request_log_fields(request.method, request.url.path, getattr(locals().get("response", None), "status_code", 500), dur_ms, rid))
+            # Record Prometheus metrics if available
+            try:
+                from apps.guard_api.metrics import observe_latency
+                observe_latency(request.url.path, request.method, dur_ms)
+            except (ImportError, ModuleNotFoundError):
+                # Prometheus metrics not available, skip
+                pass
         response.headers[REQUEST_ID_HEADER] = rid
         return response
 

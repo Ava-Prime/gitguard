@@ -77,6 +77,12 @@ codex_request_duration_seconds = Histogram(
     ['endpoint']
 )
 
+REQUEST_LATENCY = Histogram(
+    "gitguard_request_latency_ms", 
+    "Latency per endpoint", 
+    ["path", "method"]
+)
+
 logger = logging.getLogger(__name__)
 
 def start_metrics_server(port: int = 8080) -> None:
@@ -136,6 +142,10 @@ def record_codex_request(endpoint: str, status_code: int, duration: float) -> No
     """Record Codex service request metrics."""
     codex_requests_total.labels(endpoint=endpoint, status_code=status_code).inc()
     codex_request_duration_seconds.labels(endpoint=endpoint).observe(duration)
+
+def observe_latency(path: str, method: str, dur_ms: float):
+    """Record request latency in milliseconds."""
+    REQUEST_LATENCY.labels(path=path, method=method).observe(dur_ms)
 
 class MetricsMiddleware:
     """FastAPI middleware for automatic request metrics collection."""
