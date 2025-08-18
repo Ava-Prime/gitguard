@@ -1,0 +1,24 @@
+name: Performance regression
+on:
+  pull_request:
+    paths:
+      - "apps/**.py"
+      - "tests/performance/**"
+  workflow_dispatch:
+
+jobs:
+  perf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -U pip pytest pytest-benchmark
+      - run: pytest tests/performance --benchmark-json=benchmark.json
+      - uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: "pytest"
+          output-file-path: benchmark.json
+          auto-push: false
+          fail-on-alert: true
