@@ -214,12 +214,17 @@ jobs:
             const warningText = criticalChanged ? 
               '⚠️ **Critical documentation changed** - Platform team approval required\n\n' : '';
             
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `${warningText}🧭 **Codex preview**: \`${{ github.server_url }}/${{ github.repository }}/prs/${{ github.event.pull_request.number }}.html\``
-            })
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `${warningText}🧭 **Documentation preview available**\n\nView changes: [GitHub Pages Preview](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              });
+            } catch (error) {
+              console.log('Failed to create PR comment:', error.message);
+              // Don't fail the workflow if commenting fails
+            }
 
   deploy:
     if: github.event_name == 'push'

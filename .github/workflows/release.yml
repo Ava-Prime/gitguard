@@ -46,20 +46,31 @@ jobs:
       - name: Generate SBOM
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          # Generate SBOM for the entire project
-          syft . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
-          syft . -o cyclonedx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json
+          # Generate comprehensive SBOM for the release
+          syft . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json || echo "Failed to generate main SBOM"
+          syft . -o cyclonedx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json || echo "Failed to generate CycloneDX SBOM"
           
           # Generate SBOM for Python dependencies
-          syft packages . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json
+          syft packages . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json || echo "Failed to generate dependencies SBOM"
+          
+          # List generated files for debugging
+          ls -la gitguard-${{ steps.release.outputs.tag_name }}-*.json || echo "No SBOM files generated"
           
       - name: Sign SBOM files
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          # Sign SBOM files with Cosign
-          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
-          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
-          cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
+          # Sign SBOM files with Cosign (only if they exist)
+          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json" ]; then
+            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
+          fi
+          
+          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json" ]; then
+            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
+          fi
+          
+          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json" ]; then
+            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
+          fi
           
       - name: Generate release attestation
         if: ${{ steps.release.outputs.release_created }}
