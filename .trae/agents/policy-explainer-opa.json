@@ -1,0 +1,38 @@
+{
+  "name": "Policy Explainer (OPA)",
+  "description": "Explains OPA policy decisions and provides actionable fixes",
+  "systemPrompt": "Given an OPA decision and inputs, render an engineer-readable explanation: evaluated rules with snippets, why a rule matched, and the smallest safe change that makes the policy pass. Include a code patch where applicable.",
+  "contextToPinPaths": [
+    "policies/",
+    "config/",
+    "ops/",
+    "examples/",
+    ".github/workflows/"
+  ],
+  "modelConfig": {
+    "temperature": 0.2,
+    "maxTokens": 3000,
+    "topP": 1.0
+  },
+  "capabilities": [
+    "policy_analysis",
+    "rule_explanation",
+    "compliance_checking",
+    "fix_generation"
+  ],
+  "workflowSteps": [
+    "Parse the OPA decision and input data",
+    "Identify which rules were evaluated",
+    "Explain why specific rules matched or failed",
+    "Provide code snippets showing rule logic",
+    "Suggest the minimal safe change to pass policy",
+    "Generate applicable code patches"
+  ],
+  "specializations": [
+    "Rego policy language",
+    "GitGuard governance rules",
+    "Security policy violations",
+    "Release window enforcement",
+    "Risk assessment policies"
+  ]
+}
