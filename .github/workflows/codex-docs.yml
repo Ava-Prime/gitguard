@@ -207,7 +207,7 @@ jobs:
           fi
           
       - name: Comment PR with Codex link
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const criticalChanged = '${{ steps.critical-changes.outputs.critical_changed }}' === 'true';
