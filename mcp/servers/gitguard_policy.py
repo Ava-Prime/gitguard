@@ -17,9 +17,6 @@ try:
     from mcp.server.models import InitializationOptions
     from mcp.server.stdio import stdio_server
     from mcp.types import (
-        EmbeddedResource,
-        ImageContent,
-        Resource,
         TextContent,
         Tool,
     )
@@ -31,7 +28,10 @@ except ImportError:
 class GitGuardPolicyServer:
     """MCP Server for GitGuard policy explanation and visualization."""
 
-    def __init__(self):
+    # Constants
+    MAX_POLICY_NAME_LENGTH = 35
+
+    def __init__(self) -> None:
         self.repo_path = Path(os.getenv("GITGUARD_REPO_PATH", "."))
         self.policies_dir = Path(os.getenv("GITGUARD_POLICIES_DIR", "./policies"))
         self.api_base_url = os.getenv("GITGUARD_API_BASE_URL", "http://localhost:8000")
@@ -98,7 +98,7 @@ class GitGuardPolicyServer:
         except Exception as e:
             return {"error": f"Failed to retrieve rule: {str(e)}", "rule_name": rule_name}
 
-    def render_policy_block(self, pr_number: int | None = None, **kwargs) -> dict[str, Any]:
+    def render_policy_block(self, pr_number: int | None = None, **kwargs: Any) -> dict[str, Any]:
         """Render policy block visualization for a pull request.
 
         Args:
@@ -150,7 +150,7 @@ class GitGuardPolicyServer:
 
     def _extract_rule_description(self, lines: list[str], rule_line: int) -> str:
         """Extract description from comments above the rule."""
-        description_lines = []
+        description_lines: list[str] = []
         i = rule_line - 1
 
         while i >= 0 and (lines[i].strip().startswith("#") or lines[i].strip() == ""):
@@ -171,7 +171,11 @@ class GitGuardPolicyServer:
 
         for policy in policy_result.get("policies_evaluated", []):
             symbol = status_symbols.get(policy["status"], "❓")
-            name = policy["name"][:35] + "..." if len(policy["name"]) > 35 else policy["name"]
+            name = (
+                policy["name"][: self.MAX_POLICY_NAME_LENGTH] + "..."
+                if len(policy["name"]) > self.MAX_POLICY_NAME_LENGTH
+                else policy["name"]
+            )
             visual.append(f"│ {symbol} {name:<43} │")
 
         visual.append("├───────────────────────────────────────────────────┤")
@@ -234,7 +238,7 @@ def create_server() -> Server:
     server = Server("gitguard-policy-explainer")
     policy_server: GitGuardPolicyServer = GitGuardPolicyServer()
 
-    @server.list_tools()
+    @server.list_tools()  # type: ignore[misc]
     async def handle_list_tools() -> list[Tool]:
         """List available tools."""
         return [
@@ -271,7 +275,7 @@ def create_server() -> Server:
             ),
         ]
 
-    @server.call_tool()
+    @server.call_tool()  # type: ignore[misc]
     async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         """Handle tool calls."""
         if name == "get_rego_rule":

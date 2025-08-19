@@ -101,10 +101,10 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    if hasattr(app.state, 'nats_client') and app.state.nats_client:
+    if hasattr(app.state, "nats_client") and app.state.nats_client:
         await app.state.nats_client.close()
         record_connection_status("nats", False)
-    if hasattr(app.state, 'temporal_client') and app.state.temporal_client:
+    if hasattr(app.state, "temporal_client") and app.state.temporal_client:
         record_connection_status("temporal", False)
         await app.state.temporal_client.close()
 
@@ -175,7 +175,7 @@ async def github_webhook(
     # Publish event to NATS for Temporal workflow processing
     subject = f"gh.{event_type}.{action}"
 
-    if hasattr(app.state, 'nats_client') and app.state.nats_client:
+    if hasattr(app.state, "nats_client") and app.state.nats_client:
         try:
             # Create enriched event payload for Codex workflow
             event_payload = {
