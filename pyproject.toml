@@ -11,6 +11,13 @@ fix = true
 select = ["E", "F", "I", "B", "UP", "PL"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Test files and scripts - allow more flexibility
+"tests/*.py" = ["PLR0912", "PLR0911", "PLR0915", "E402", "PLC0415"]
+"scripts/*.py" = ["PLR0912", "PLR0911", "PLR0915", "E402", "PLC0415"]
+# MCP server - dynamic decorator usage
+"mcp/servers/gitguard_policy.py" = ["ANN201", "ANN001", "D103"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
