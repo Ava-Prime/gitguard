@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload release assets
         if: ${{ steps.release.outputs.release_created }}
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
           tag_name: ${{ steps.release.outputs.tag_name }}
           files: |
