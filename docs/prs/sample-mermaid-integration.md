@@ -1,7 +1,7 @@
 # PR #456: Add user authentication system
 
-**Risk:** medium • **Checks:** ✓  
-**Coverage Δ:** +2.3% • **Perf Δ:** +15ms • **Labels:** feature, security  
+**Risk:** medium • **Checks:** ✓
+**Coverage Δ:** +2.3% • **Perf Δ:** +15ms • **Labels:** feature, security
 **Release window:** open • [GitHub](https://github.com/example/repo/pull/456)
 
 ## Summary

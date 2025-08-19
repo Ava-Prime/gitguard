@@ -13,7 +13,7 @@ automerge:
   coverage_drop_max: -0.2  # percentage points
   perf_budget_ms: 5
   require_tests: true
-  
+
 release_windows:
   timezone: "Africa/Johannesburg"
   block_windows:

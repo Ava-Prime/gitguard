@@ -10,9 +10,9 @@ $allChecksPass = $true
 # Check if workflow file exists
 if (Test-Path $workflowPath) {
     Write-Host "✅ codex-docs.yml workflow found" -ForegroundColor Green
-    
+
     $workflowContent = Get-Content $workflowPath -Raw
-    
+
     # Check for PR trigger
     if ($workflowContent -match "pull_request:") {
         Write-Host "✅ PR trigger configured" -ForegroundColor Green
@@ -20,7 +20,7 @@ if (Test-Path $workflowPath) {
         Write-Host "❌ PR trigger missing" -ForegroundColor Red
         $allChecksPass = $false
     }
-    
+
     # Check for PR comment action
     if ($workflowContent -match "thollander/actions-comment-pull-request") {
         Write-Host "✅ PR comment action configured" -ForegroundColor Green
@@ -28,7 +28,7 @@ if (Test-Path $workflowPath) {
         Write-Host "❌ PR comment action missing" -ForegroundColor Red
         $allChecksPass = $false
     }
-    
+
     # Check for CODEX_BASE_URL variable
     if ($workflowContent -match "CODEX_BASE_URL") {
         Write-Host "✅ CODEX_BASE_URL variable referenced" -ForegroundColor Green
@@ -37,7 +37,7 @@ if (Test-Path $workflowPath) {
         Write-Host "❌ CODEX_BASE_URL variable missing" -ForegroundColor Red
         $allChecksPass = $false
     }
-    
+
     # Check for comment job
     if ($workflowContent -match "comment:") {
         Write-Host "✅ Comment job configured" -ForegroundColor Green
@@ -45,7 +45,7 @@ if (Test-Path $workflowPath) {
         Write-Host "❌ Comment job missing" -ForegroundColor Red
         $allChecksPass = $false
     }
-    
+
     # Check for proper permissions
     if ($workflowContent -match "pull-requests: write") {
         Write-Host "✅ Pull request write permissions configured" -ForegroundColor Green
@@ -53,7 +53,7 @@ if (Test-Path $workflowPath) {
         Write-Host "❌ Pull request write permissions missing" -ForegroundColor Red
         $allChecksPass = $false
     }
-    
+
 } else {
     Write-Host "❌ codex-docs.yml workflow not found" -ForegroundColor Red
     $allChecksPass = $false

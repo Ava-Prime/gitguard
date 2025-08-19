@@ -138,14 +138,14 @@ class ChaosTestConfig:
     DUPLICATE_COUNT = 50
     TIMEOUT_SECONDS = 30
     FAULT_ONCE_DELIVERY_ID = os.getenv("FAULT_ONCE_DELIVERY_ID")
-    
+
     # Org-Brain Feature Configuration
     GRAPH_API_URL = os.getenv("GRAPH_API_URL", "http://localhost:8080/api/v1/graph")
     POLICY_TRANSPARENCY_ENABLED = os.getenv("POLICY_TRANSPARENCY_ENABLED", "true").lower() == "true"
     MERMAID_GENERATION_ENABLED = os.getenv("MERMAID_GENERATION_ENABLED", "true").lower() == "true"
     OWNERS_INDEX_ENABLED = os.getenv("OWNERS_INDEX_ENABLED", "true").lower() == "true"
     SLO_MONITORING_ENABLED = os.getenv("SLO_MONITORING_ENABLED", "true").lower() == "true"
-    
+
     # Chaos Test Thresholds
     GRAPH_API_TIMEOUT = 5.0
     POLICY_EVAL_TIMEOUT = 10.0

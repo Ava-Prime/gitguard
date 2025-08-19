@@ -57,7 +57,7 @@ comment:
       with:
         message: |
           🧭 **Org-Brain Analysis**: `${{ vars.CODEX_BASE_URL }}/prs/${{ github.event.pull_request.number }}.html`
-          
+
           📊 **Features Available:**
           - Policy transparency with source references
           - Mermaid relationship graphs
@@ -82,7 +82,7 @@ comment:
 The automated comment appears as:
 
 > 🧭 **Org-Brain Analysis**: `https://your-domain.com/prs/123.html`
-> 
+>
 > 📊 **Features Available:**
 > - Policy transparency with source references
 > - Mermaid relationship graphs

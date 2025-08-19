@@ -22,7 +22,7 @@ The main infrastructure is defined in [`ops/compose.yml`](../ops/compose.yml):
 ```yaml
 nats:
   image: nats:2.10
-  ports: 
+  ports:
     - "4222:4222"      # NATS protocol
     - "8222:8222"      # HTTP monitoring
   command: ["--http_port", "8222", "--jetstream", "--store_dir", "/data"]
@@ -114,7 +114,7 @@ guard-codex:
 
 ```yaml
 guard-api:
-  build: 
+  build:
     context: ../apps/guard-api
     dockerfile: Dockerfile
   environment:

@@ -49,7 +49,7 @@ SELECT n.ntype, n.nkey, n.title, 1 - (e.vector <=> :qv) AS score,
        n.meta->>'labels' as labels
 FROM codex_nodes n
 JOIN codex_embeddings e ON e.node_id = n.id
-WHERE n.ntype = 'PR' 
+WHERE n.ntype = 'PR'
   AND n.meta->>'labels' LIKE '%bug%'
 ORDER BY e.vector <=> :qv
 LIMIT 10;

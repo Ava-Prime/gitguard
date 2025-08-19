@@ -140,8 +140,16 @@ For detailed security architecture information, see:
 - [Security Controls Matrix](docs/security-controls.md)
 - [Incident Response Plan](docs/incident-response.md)
 
+## Vulnerability Disclosure
+
+- **Report to:** security@gitguard.dev
+- **Triage:** within 1 business day
+- **Fix ETA:** critical ≤ 7 days, high ≤ 14 days
+- **Credit:** public thanks in release notes unless you prefer anonymity
+- **Safe Harbor:** Good-faith research will not be pursued legally
+
 ---
 
-**Last Updated**: December 2024  
-**Next Review**: March 2025  
+**Last Updated**: December 2024
+**Next Review**: March 2025
 **Document Version**: 2.1.0

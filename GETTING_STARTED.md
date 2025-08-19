@@ -74,15 +74,15 @@ Codex ("org-brain") generates comprehensive organizational intelligence:
 GitGuard includes three demo flows to showcase different use cases:
 
 ### `make demo-quick` (2 minutes)
-**Target Audience**: Developers  
+**Target Audience**: Developers
 **Scenarios**: Low-risk auto-merge + Security policy enforcement
 
 ### `make demo-investor` (5 minutes)
-**Target Audience**: Leadership, Investors  
+**Target Audience**: Leadership, Investors
 **Scenarios**: Low-risk + Release window + Dashboard metrics
 
 ### `make demo-customer` (10 minutes)
-**Target Audience**: Enterprise customers  
+**Target Audience**: Enterprise customers
 **Scenarios**: Comprehensive governance demo with all policies
 
 ## Key Features Walkthrough

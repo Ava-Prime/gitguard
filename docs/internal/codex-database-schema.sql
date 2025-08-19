@@ -316,25 +316,25 @@ CREATE OR REPLACE FUNCTION calculate_repo_health_score(repo_name_param VARCHAR)
 RETURNS FLOAT AS $
 DECLARE
     avg_risk FLOAT;
-    compliance_rate FLOAT; 
+    compliance_rate FLOAT;
     coverage_trend FLOAT;
     health_score FLOAT;
 BEGIN
     -- Average risk score (last 30 days)
     SELECT AVG(risk_score) INTO avg_risk
-    FROM pull_requests 
-    WHERE repo_name = repo_name_param 
+    FROM pull_requests
+    WHERE repo_name = repo_name_param
     AND created_at > NOW() - INTERVAL '30 days';
-    
+
     -- Policy compliance rate (last 30 days)
-    SELECT 
+    SELECT
         COUNT(*) FILTER (WHERE result = 'pass')::FLOAT / NULLIF(COUNT(*), 0) * 100
     INTO compliance_rate
     FROM policy_evaluations pe
     JOIN pull_requests pr ON pe.pr_id = pr.id
-    WHERE pr.repo_name = repo_name_param 
+    WHERE pr.repo_name = repo_name_param
     AND pe.evaluated_at > NOW() - INTERVAL '30 days';
-    
+
     -- Test coverage trend (simplified)
     SELECT AVG(
         CASE WHEN (metadata->>'coverage_delta')::FLOAT > 0 THEN 1 ELSE 0 END
@@ -343,14 +343,14 @@ BEGIN
     WHERE repo_name = repo_name_param
     AND state = 'merged'
     AND created_at > NOW() - INTERVAL '30 days';
-    
+
     -- Calculate weighted health score
     health_score := (
         COALESCE(100 - avg_risk, 50) * 0.4 +  -- Risk (inverted)
         COALESCE(compliance_rate, 100) * 0.3 + -- Compliance
         COALESCE(coverage_trend, 50) * 0.3     -- Coverage trend
     );
-    
+
     RETURN GREATEST(0, LEAST(100, health_score));
 END;
 $ LANGUAGE plpgsql;
@@ -369,7 +369,7 @@ RETURNS TABLE(
 ) AS $
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         'symbol' as entity_type,
         s.id as entity_id,
         (1 - (s.embedding <=> query_embedding)) as similarity_score,
@@ -377,10 +377,10 @@ BEGIN
     FROM symbols s
     WHERE s.embedding IS NOT NULL
     AND (entity_type_param IS NULL OR entity_type_param = 'symbol')
-    
+
     UNION ALL
-    
-    SELECT 
+
+    SELECT
         'adr' as entity_type,
         a.id as entity_id,
         (1 - (a.embedding <=> query_embedding)) as similarity_score,
@@ -388,10 +388,10 @@ BEGIN
     FROM adrs a
     WHERE a.embedding IS NOT NULL
     AND (entity_type_param IS NULL OR entity_type_param = 'adr')
-    
+
     UNION ALL
-    
-    SELECT 
+
+    SELECT
         'incident' as entity_type,
         i.id as entity_id,
         (1 - (i.embedding <=> query_embedding)) as similarity_score,
@@ -399,7 +399,7 @@ BEGIN
     FROM incidents i
     WHERE i.embedding IS NOT NULL
     AND (entity_type_param IS NULL OR entity_type_param = 'incident')
-    
+
     ORDER BY similarity_score DESC
     LIMIT limit_param;
 END;
@@ -418,7 +418,7 @@ RETURNS TABLE(
 ) AS $
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         co.owner as username,
         AVG(co.expertise_score) as expertise_score,
         COUNT(DISTINCT pr.id)::INTEGER as recent_contributions,
@@ -439,12 +439,12 @@ $ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_repo_health_trigger()
 RETURNS TRIGGER AS $
 BEGIN
-    UPDATE repositories 
-    SET 
+    UPDATE repositories
+    SET
         health_score = calculate_repo_health_score(NEW.repo_name),
         updated_at = NOW()
     WHERE name = NEW.repo_name;
-    
+
     RETURN NEW;
 END;
 $ LANGUAGE plpgsql;
@@ -459,7 +459,7 @@ CREATE TRIGGER tr_update_repo_health_on_pr
 
 -- Active PRs with risk analysis
 CREATE OR REPLACE VIEW active_prs_with_risk AS
-SELECT 
+SELECT
     pr.*,
     r.health_score as repo_health,
     COUNT(pfc.id) as files_touched,
@@ -477,7 +477,7 @@ GROUP BY pr.id, r.health_score;
 
 -- Repository dashboard metrics
 CREATE OR REPLACE VIEW repo_dashboard_metrics AS
-SELECT 
+SELECT
     r.name as repo_name,
     r.health_score,
     COUNT(DISTINCT pr.id) as total_prs,
@@ -503,7 +503,7 @@ GROUP BY r.id, r.name, r.health_score;
 
 -- Knowledge graph connections view
 CREATE OR REPLACE VIEW knowledge_connections AS
-SELECT 
+SELECT
     'pr' as source_type,
     pr.id as source_id,
     pr.title as source_title,
@@ -519,7 +519,7 @@ WHERE pr.state IN ('open', 'merged')
 
 UNION ALL
 
-SELECT 
+SELECT
     'adr' as source_type,
     a.id as source_id,
     a.title as source_title,
@@ -535,7 +535,7 @@ JOIN pull_requests pr ON pr.id = pfc.pr_id
 
 UNION ALL
 
-SELECT 
+SELECT
     'incident' as source_type,
     i.id as source_id,
     i.title as source_title,
@@ -563,7 +563,7 @@ INSERT INTO policies (name, description, enforcement_level, category) VALUES
 
 -- Materialized view for fast dashboard queries
 CREATE MATERIALIZED VIEW dashboard_summary AS
-SELECT 
+SELECT
     (SELECT COUNT(*) FROM repositories) as total_repos,
     (SELECT COUNT(*) FROM pull_requests WHERE state = 'open') as open_prs,
     (SELECT COUNT(*) FROM pull_requests WHERE created_at > NOW() - INTERVAL '24 hours') as prs_today,
@@ -571,7 +571,7 @@ SELECT
     (SELECT COUNT(*) FROM incidents WHERE status != 'resolved') as active_incidents,
     (
         SELECT COUNT(*) FILTER (WHERE result = 'pass')::FLOAT / NULLIF(COUNT(*), 0) * 100
-        FROM policy_evaluations 
+        FROM policy_evaluations
         WHERE evaluated_at > NOW() - INTERVAL '7 days'
     ) as weekly_compliance_rate,
     NOW() as last_updated;

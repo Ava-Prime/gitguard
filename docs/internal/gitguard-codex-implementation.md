@@ -78,19 +78,19 @@ async def extract_github_facts(event: Dict[str, Any]) -> Dict[str, Any]:
 async def analyze_code_impact(repo: str, sha: str, files: List[str]) -> Dict[str, Any]:
     """Deep analysis: symbols, dependencies, test coverage, complexity"""
     analysis = {}
-    
+
     # Symbol extraction (tree-sitter)
     analysis["symbols"] = await extract_symbols_from_files(repo, sha, files)
-    
+
     # Test coverage delta
     analysis["coverage"] = await calculate_coverage_delta(repo, sha)
-    
+
     # Complexity and quality metrics
     analysis["complexity"] = await analyze_complexity(repo, files)
-    
+
     # Security scan results
     analysis["security"] = await run_security_scan(repo, files)
-    
+
     return analysis
 
 @activity.defn
@@ -99,13 +99,13 @@ async def update_knowledge_graph(facts: Dict, analysis: Dict) -> None:
     async with get_db_connection() as db:
         # Update repository state
         await upsert_repository(db, facts["repo"], analysis)
-        
+
         # Update PR and its relationships
         if facts.get("pr"):
             pr_id = await upsert_pull_request(db, facts["pr"], analysis)
             await link_pr_to_files(db, pr_id, facts["files_changed"])
             await link_pr_to_policies(db, pr_id, analysis.get("policy_results", []))
-        
+
         # Update symbols and their relationships
         for symbol in analysis.get("symbols", []):
             await upsert_symbol(db, symbol, facts["repo"])
@@ -114,17 +114,17 @@ async def update_knowledge_graph(facts: Dict, analysis: Dict) -> None:
 async def render_documentation(facts: Dict, analysis: Dict) -> str:
     """Generate markdown documentation from facts and analysis"""
     docs_path = f"docs/generated/{facts['repo'].replace('/', '_')}"
-    
+
     # Generate PR documentation
     if facts.get("pr"):
         await render_pr_page(docs_path, facts["pr"], analysis)
-    
+
     # Update repository overview
     await render_repo_overview(docs_path, facts["repo"], analysis)
-    
+
     # Update governance documentation
     await render_governance_updates(docs_path, analysis.get("policy_results", []))
-    
+
     return docs_path
 
 @activity.defn
@@ -132,13 +132,13 @@ async def publish_docs_portal(docs_path: str) -> Dict[str, str]:
     """Build and deploy documentation portal"""
     # Build with MkDocs
     build_result = await build_mkdocs_site(docs_path)
-    
+
     # Deploy to GitHub Pages or S3
     deploy_urls = await deploy_documentation(build_result)
-    
+
     # Post preview links to PR if applicable
     await post_preview_links(deploy_urls)
-    
+
     return deploy_urls
 
 @workflow.defn
@@ -147,20 +147,20 @@ class CodexWorkflow:
     async def run(self, event: Dict[str, Any]) -> Dict[str, str]:
         # Extract structured facts
         facts = await workflow.execute_activity(
-            extract_github_facts, 
-            event, 
+            extract_github_facts,
+            event,
             start_to_close_timeout=timedelta(seconds=60)
         )
-        
+
         # Analyze code impact
         analysis = await workflow.execute_activity(
             analyze_code_impact,
-            facts["repo"], 
+            facts["repo"],
             facts.get("commit", {}).get("id", ""),
             facts["files_changed"],
             start_to_close_timeout=timedelta(minutes=10)
         )
-        
+
         # Update knowledge graph
         await workflow.execute_activity(
             update_knowledge_graph,
@@ -168,7 +168,7 @@ class CodexWorkflow:
             analysis,
             start_to_close_timeout=timedelta(minutes=2)
         )
-        
+
         # Render documentation
         docs_path = await workflow.execute_activity(
             render_documentation,
@@ -176,14 +176,14 @@ class CodexWorkflow:
             analysis,
             start_to_close_timeout=timedelta(minutes=5)
         )
-        
+
         # Publish portal
         urls = await workflow.execute_activity(
             publish_docs_portal,
             docs_path,
             start_to_close_timeout=timedelta(minutes=5)
         )
-        
+
         return urls
 ```
 
@@ -253,7 +253,7 @@ async def render_pr_page(docs_path: str, pr_data: Dict, analysis: Dict) -> None:
         analysis=analysis,
         timestamp=datetime.now().isoformat()
     )
-    
+
     pr_path = Path(docs_path) / "prs" / f"{pr_data['number']}.md"
     pr_path.parent.mkdir(parents=True, exist_ok=True)
     pr_path.write_text(content)
@@ -281,23 +281,23 @@ async def generate_embeddings(texts: List[str]) -> List[List[float]]:
 async def find_related_entities(query: str, entity_type: str = None) -> List[Dict]:
     """Find semantically similar entities in knowledge graph"""
     query_embedding = await generate_embeddings([query])
-    
+
     # Vector similarity search in Postgres
     sql = """
     SELECT id, name, type, 1 - (embedding <=> %s) as similarity
-    FROM symbols 
+    FROM symbols
     WHERE (%s IS NULL OR type = %s)
     ORDER BY embedding <=> %s
     LIMIT 10
     """
-    
+
     results = await db.fetch(sql, query_embedding[0], entity_type, entity_type, query_embedding[0])
     return results
 
 async def suggest_reviewers(pr_data: Dict) -> List[str]:
     """AI-powered reviewer suggestions based on code changes and history"""
     changed_symbols = await extract_changed_symbols(pr_data)
-    
+
     # Find developers who frequently touch these symbols
     reviewer_scores = {}
     for symbol in changed_symbols:
@@ -305,7 +305,7 @@ async def suggest_reviewers(pr_data: Dict) -> List[str]:
         for pr in related_prs:
             author = pr['author']
             reviewer_scores[author] = reviewer_scores.get(author, 0) + 1
-    
+
     # Sort by expertise and availability
     return sorted(reviewer_scores.keys(), key=lambda x: reviewer_scores[x], reverse=True)[:3]
 ```
@@ -403,14 +403,14 @@ app = FastAPI()
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
-    
+
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-    
+
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
-    
+
     async def broadcast_update(self, message: dict):
         for connection in self.active_connections:
             try:
@@ -455,16 +455,16 @@ class RiskPredictor:
     def __init__(self):
         self.model = RandomForestClassifier(n_estimators=100)
         self.scaler = StandardScaler()
-    
+
     async def train_on_historical_data(self):
         """Train model on historical PR outcomes"""
         # Fetch historical PR data
         prs = await fetch_historical_prs()
-        
+
         # Feature engineering
         features = []
         labels = []
-        
+
         for pr in prs:
             feature_vector = [
                 pr['files_changed'],
@@ -478,15 +478,15 @@ class RiskPredictor:
             ]
             features.append(feature_vector)
             labels.append(1 if pr['caused_incident'] else 0)
-        
+
         # Train model
         X_scaled = self.scaler.fit_transform(features)
         self.model.fit(X_scaled, labels)
-        
+
         # Save model
         joblib.dump(self.model, 'models/risk_predictor.pkl')
         joblib.dump(self.scaler, 'models/risk_scaler.pkl')
-    
+
     async def predict_pr_risk(self, pr_data: dict) -> float:
         """Predict incident probability for new PR"""
         feature_vector = self.extract_features(pr_data)
@@ -498,22 +498,22 @@ class CodeHealthMetrics:
     async def calculate_repository_health(self, repo: str) -> Dict[str, float]:
         """Comprehensive repository health metrics"""
         metrics = {}
-        
+
         # Technical debt indicators
         metrics['technical_debt'] = await calculate_technical_debt(repo)
-        
+
         # Test coverage trends
         metrics['test_coverage_trend'] = await analyze_coverage_trends(repo)
-        
+
         # Code complexity evolution
         metrics['complexity_trend'] = await analyze_complexity_trends(repo)
-        
+
         # Security posture
         metrics['security_score'] = await calculate_security_score(repo)
-        
+
         # Developer velocity
         metrics['velocity_trend'] = await analyze_velocity_trends(repo)
-        
+
         return metrics
 ```
 
@@ -526,35 +526,35 @@ class IncidentLearner:
     async def analyze_incident_root_cause(self, incident_id: str) -> Dict:
         """Deep analysis of incident to extract learnings"""
         incident = await fetch_incident(incident_id)
-        
+
         # Find the PR(s) that caused the issue
         root_cause_prs = await find_causal_prs(incident)
-        
+
         analysis = {
             "patterns": [],
             "policy_gaps": [],
             "suggested_rules": []
         }
-        
+
         for pr in root_cause_prs:
             # What patterns led to this incident?
             patterns = await identify_problematic_patterns(pr)
             analysis["patterns"].extend(patterns)
-            
+
             # What policies failed to catch this?
             policy_gaps = await identify_policy_gaps(pr, incident)
             analysis["policy_gaps"].extend(policy_gaps)
-            
+
             # What new rules could prevent this?
             suggested_rules = await suggest_preventive_rules(pr, incident)
             analysis["suggested_rules"].extend(suggested_rules)
-        
+
         # Generate learning document
         await generate_incident_learning_doc(incident, analysis)
-        
+
         # Propose policy updates
         await propose_policy_updates(analysis["suggested_rules"])
-        
+
         return analysis
 
     async def generate_incident_learning_doc(self, incident: Dict, analysis: Dict):
@@ -588,7 +588,7 @@ class IncidentLearner:
 ---
 *This document was auto-generated by GitGuard Codex and will be updated as learnings evolve.*
 """
-        
+
         doc_path = f"docs/incidents/learning-{incident['id']}.md"
         await save_document(doc_path, doc_content)
 ```
@@ -601,7 +601,7 @@ class IncidentLearner:
 
 2. **Solution Demo**:
    - Show low-risk PR auto-merging in 45 seconds
-   - Watch high-risk PR trigger human review with AI explanations  
+   - Watch high-risk PR trigger human review with AI explanations
    - Demonstrate security violation getting hard-blocked
    - Display real-time knowledge graph updates
 
@@ -663,7 +663,7 @@ make demo-ai-reviewers
 - Review cycles per PR: 50% reduction
 - Time to production: 30% faster
 
-**Quality & Security**  
+**Quality & Security**
 - Security incidents: 90% reduction
 - Policy compliance: 100%
 - Technical debt growth: Controlled

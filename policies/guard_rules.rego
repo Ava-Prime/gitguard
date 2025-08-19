@@ -197,7 +197,7 @@ docs_only_change if {
     count(input.pr.changed_paths) > 0
     every path in input.pr.changed_paths {
         endswith(path, ".md") or
-        startswith(path, "docs/") or 
+        startswith(path, "docs/") or
         path == "README.md"
     }
 }
@@ -213,11 +213,11 @@ in_blocked_window if {
     tz := "Africa/Johannesburg"
     tod := time.clock(now, tz)
     dow := time.weekday(now, tz)
-    
+
     # Friday 16:00 - Monday 08:00
     (dow == "Friday" and tod.hour >= 16) or
     (dow == "Saturday") or
-    (dow == "Sunday") or 
+    (dow == "Sunday") or
     (dow == "Monday" and tod.hour < 8)
 }
 
@@ -371,7 +371,7 @@ deny[msg] {
 is_lockfile(path) {
     lockfile_patterns := [
         "package-lock.json",
-        "yarn.lock", 
+        "yarn.lock",
         "pnpm-lock.yaml",
         "Pipfile.lock",
         "poetry.lock",

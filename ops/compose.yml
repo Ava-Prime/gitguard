@@ -2,7 +2,7 @@ services:
   # Message Queue
   nats:
     image: nats:2.10
-    ports: 
+    ports:
       - "4222:4222"
       - "8222:8222"  # HTTP monitoring
     command: ["--http_port", "8222", "--jetstream", "--store_dir", "/data"]
@@ -54,7 +54,7 @@ services:
 
   # GitGuard API Server
   guard-api:
-    build: 
+    build:
       context: ../apps/guard-api
       dockerfile: Dockerfile
     environment:

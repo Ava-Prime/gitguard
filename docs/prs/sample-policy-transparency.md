@@ -1,7 +1,7 @@
 # PR #123: Add API rate limiting feature
 
-**Risk:** 0.25 • **Checks:** ✓  
-**Coverage Δ:** -0.1% • **Perf Δ:** 2.5 • **Labels:** risk:low, area:api  
+**Risk:** 0.25 • **Checks:** ✓
+**Coverage Δ:** -0.1% • **Perf Δ:** 2.5 • **Labels:** risk:low, area:api
 **Release window:** open • [GitHub](https://github.com/example-org/example-repo/pull/123)
 
 ## Summary

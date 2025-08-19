@@ -1,6 +1,6 @@
 name: GitGuard
 url: https://gitguard.your-org.local
-hook_attributes: 
+hook_attributes:
   url: https://webhooks.gitguard.your-org.local/github
 redirect_url: https://gitguard.your-org.local/app/callback
 public: false

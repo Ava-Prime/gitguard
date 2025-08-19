@@ -39,14 +39,14 @@ tags: {% for label in pr.labels %}{{ label }}{% if not loop.last %}, {% endif %}
 {% for file in files_changed %}
 === "{{ file.filename }}"
     **Change Type:** {{ file.status | title }} • **Lines:** +{{ file.additions }}/-{{ file.deletions }}
-    
+
     {% if file.filename in analysis.complexity_metrics %}
     **Complexity Metrics:**
     - Cyclomatic Complexity: {{ analysis.complexity_metrics[file.filename].cyclomatic_complexity }}
     - Lines of Code: {{ analysis.complexity_metrics[file.filename].lines_of_code }}
     - Maintainability Index: {{ "%.1f" | format(analysis.complexity_metrics[file.filename].maintainability_index) }}
     {% endif %}
-    
+
     {% if file.patch %}
     ```diff
     {{ file.patch | truncate(500) }}
@@ -114,7 +114,7 @@ This PR impacts the following Architecture Decision Records:
 ### Related Changes
 {% if analysis.related_prs %}
 {% for related_pr in analysis.related_prs %}
-- [PR #{{ related_pr.number }}: {{ related_pr.title }}]({{ related_pr.number }}.md) 
+- [PR #{{ related_pr.number }}: {{ related_pr.title }}]({{ related_pr.number }}.md)
   ({{ related_pr.shared_files }} shared files)
 {% endfor %}
 {% else %}
@@ -183,7 +183,7 @@ Use default CODEOWNERS for review assignment.
 
 # templates/repo_overview.md.j2
 ---
-title: "{{ repo }} - Repository Overview"  
+title: "{{ repo }} - Repository Overview"
 description: "Engineering intelligence dashboard for {{ repo }}"
 ---
 

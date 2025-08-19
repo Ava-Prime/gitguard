@@ -12,10 +12,10 @@ services:
       - CODEX_PUBLISH_PORTAL=build-only
       - CODEX_EMBEDDINGS_ENABLED=false
       - CODEX_OWNERS_ENABLED=false
-      
+
       # Database Configuration
       - DATABASE_URL=postgresql+psycopg://codex_staging:${CODEX_STAGING_DB_PASSWORD}@postgres:5432/codex_staging
-      
+
       # JetStream Configuration
       - JETSTREAM_URL=nats://nats:4222
       - JETSTREAM_STREAM=codex-staging
@@ -23,23 +23,23 @@ services:
       - JETSTREAM_MAX_AGE=24h
       - JETSTREAM_MAX_MSGS=100000
       - JETSTREAM_MAX_BYTES=1GB
-      
+
       # Build Configuration
       - DOCS_BUILD_ENABLED=true
       - DOCS_PUBLISH_ENABLED=false
       - MAX_CONCURRENT_BUILDS=3
       - BUILD_TIMEOUT=300s
-      
+
       # Monitoring
       - LOG_LEVEL=DEBUG
       - METRICS_ENABLED=true
       - METRICS_PORT=9090
-      
+
       # Staging Safety Features
       - CODEX_DEBUG_MODE=true
       - CODEX_DRY_RUN=false
       - CODEX_STAGING_MODE=true
-    
+
     # Resource limits for staging
     deploy:
       resources:
@@ -49,7 +49,7 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-    
+
     # Health check configuration
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

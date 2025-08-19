@@ -146,7 +146,7 @@ Use this checklist to verify all core features are working correctly:
 3. Verify `CodexFreshnessSLOBreached` alert rule exists
 4. Check alert fires when P99 latency > 180s
 
-**Implementation**: 
+**Implementation**:
 - `DOC_FRESH` histogram in `activities.py`
 - Alert rule in `ops/prometheus/alerts_codex.yml`
 

@@ -3,7 +3,7 @@
 
 ## 🔄 Change Type
 - [ ] feat: New feature
-- [ ] fix: Bug fix  
+- [ ] fix: Bug fix
 - [ ] perf: Performance improvement
 - [ ] refactor: Code refactoring
 - [ ] docs: Documentation

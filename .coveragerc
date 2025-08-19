@@ -3,7 +3,7 @@
 
 [run]
 source = apps
-omit = 
+omit =
     */tests/*
     */test_*
     */__pycache__/*
@@ -48,9 +48,9 @@ exclude_lines =
     @(abc\.)?abstractmethod
     # Initial development phase exclusions
     # TODO: implement
-    # FIXME: 
-    # XXX: 
-    # HACK: 
+    # FIXME:
+    # XXX:
+    # HACK:
     # NOTE: incomplete implementation
     pass  # placeholder
     ...  # placeholder

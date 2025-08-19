@@ -102,7 +102,7 @@ version: '3.8'
 services:
   # Add Codex service to existing stack
   guard-codex:
-    build: 
+    build:
       context: ../apps/guard-codex
       dockerfile: Dockerfile
     ports:
@@ -153,7 +153,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ../migrations:/docker-entrypoint-initdb.d
     command: |
-      postgres 
+      postgres
       -c shared_preload_libraries=vector
       -c max_connections=200
       -c shared_buffers=256MB
@@ -206,11 +206,11 @@ site_url: https://your-org.github.io/gitguard-codex
 
 nav:
   - Home: index.md
-  - Repositories: 
+  - Repositories:
     - Overview: repos/index.md
     - Health Metrics: repos/health.md
   - Pull Requests:
-    - Active: prs/index.md  
+    - Active: prs/index.md
     - Risk Analysis: prs/risk-dashboard.md
   - Knowledge Graph:
     - Symbol Explorer: graph/symbols.md
@@ -294,7 +294,7 @@ Welcome to the **GitGuard Engineering Intelligence Platform** - where AI-powered
 GitGuard Codex transforms your GitHub repositories into intelligent, self-documenting systems that:
 
 - **Learn** from every code change and policy decision
-- **Predict** risks before they become incidents  
+- **Predict** risks before they become incidents
 - **Document** architectural decisions and their evolution
 - **Connect** code, people, and knowledge seamlessly
 
@@ -341,7 +341,7 @@ GitGuard Codex transforms your GitHub repositories into intelligent, self-docume
 This platform is automatically maintained by GitGuard Codex, which analyzes every GitHub event to:
 
 1. **Extract** structured knowledge from code changes
-2. **Assess** risks using AI-powered analysis  
+2. **Assess** risks using AI-powered analysis
 3. **Update** documentation and knowledge graphs
 4. **Learn** from incidents to improve future decisions
 
@@ -436,14 +436,14 @@ jobs:
         with:
           script: |
             const output = `## 📚 Documentation Preview
-            
+
             Your documentation changes are ready for review:
-            
+
             🔗 **Preview URL:** ${{ steps.deploy.outputs.deploy-url }}
-            
+
             The preview will be updated automatically with new commits.
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -470,7 +470,7 @@ codex-build: ## Build Codex service
 codex-up: ## Start Codex services
 	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml up -d guard-codex docs-server
 
-codex-down: ## Stop Codex services  
+codex-down: ## Stop Codex services
 	@docker-compose -f ops/docker-compose.yml -f ops/docker-compose.codex.yml down
 
 codex-logs: ## View Codex service logs
@@ -631,7 +631,7 @@ echo -e "${BLUE}🎯 Demo Complete!${NC}"
 echo ""
 echo "What you just saw:"
 echo "✅ Automatic knowledge extraction from GitHub events"
-echo "✅ Real-time documentation generation and publishing"  
+echo "✅ Real-time documentation generation and publishing"
 echo "✅ AI-powered semantic search across code and decisions"
 echo "✅ Expert reviewer recommendations based on code expertise"
 echo "✅ Risk assessment with transparent explanations"
@@ -648,7 +648,7 @@ echo "🤖 GitGuard AI-Powered Review Demo"
 
 # Demo high-risk PR that needs human review
 HIGH_RISK_PR='{
-  "action": "opened", 
+  "action": "opened",
   "pull_request": {
     "number": 124,
     "title": "Refactor database connection pool and add admin endpoints",
@@ -678,13 +678,13 @@ echo "Suggested Reviewers: $(echo "$ANALYSIS" | jq -r '.suggested_reviewers[]?.u
 echo ""
 echo "🎯 Key AI Insights:"
 echo "• Large change scope triggers mandatory review"
-echo "• Database changes require database expert approval"  
+echo "• Database changes require database expert approval"
 echo "• New developer needs experienced reviewer"
 echo "• Breaking change label escalates to architecture review"
 
 ---
 
-# scripts/demo-incident-learning.sh  
+# scripts/demo-incident-learning.sh
 #!/bin/bash
 # Demo incident analysis and organizational learning
 
@@ -694,7 +694,7 @@ echo "📖 GitGuard Incident Learning Demo"
 INCIDENT_EVENT='{
   "incident": {
     "id": "INC-001",
-    "title": "API Performance Degradation", 
+    "title": "API Performance Degradation",
     "severity": "high",
     "description": "50% increase in response times after deployment",
     "root_cause_pr": 123,
@@ -712,7 +712,7 @@ sleep 2
 
 echo "📋 Generated Learnings:"
 echo "• Pattern: Large database refactoring without performance testing"
-echo "• Policy Gap: No performance regression tests required"  
+echo "• Policy Gap: No performance regression tests required"
 echo "• Suggested Rule: Block PRs >20 files without benchmark results"
 echo "• Documentation: Auto-generated post-mortem with prevention steps"
 
@@ -736,15 +736,15 @@ events {
 http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
-    
+
     # Logging
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                    '$status $body_bytes_sent "$http_referer" '
                    '"$http_user_agent" "$http_x_forwarded_for"';
-    
+
     access_log /var/log/nginx/access.log main;
     error_log /var/log/nginx/error.log warn;
-    
+
     # Performance
     sendfile on;
     tcp_nopush on;
@@ -752,20 +752,20 @@ http {
     keepalive_timeout 65;
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-    
+
     server {
         listen 80;
         server_name localhost;
         root /usr/share/nginx/html;
         index index.html;
-        
+
         # Main documentation
         location / {
             try_files $uri $uri/ $uri.html =404;
             add_header Cache-Control "public, max-age=3600";
         }
-        
-        # API proxy to Codex service  
+
+        # API proxy to Codex service
         location /api/ {
             proxy_pass http://guard-codex:8080/api/;
             proxy_set_header Host $host;
@@ -773,7 +773,7 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-        
+
         # WebSocket for real-time updates
         location /ws {
             proxy_pass http://guard-codex:8080/ws;
@@ -782,14 +782,14 @@ http {
             proxy_set_header Connection "upgrade";
             proxy_set_header Host $host;
         }
-        
+
         # Health check
         location /health {
             access_log off;
             return 200 "healthy\n";
             add_header Content-Type text/plain;
         }
-        
+
         # Security headers
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -813,7 +813,7 @@ http {
 }
 
 /* Risk score indicators */
-.risk-low { 
+.risk-low {
   background: linear-gradient(135deg, var(--gitguard-success), #059669);
   color: white;
   padding: 0.5rem 1rem;
@@ -912,7 +912,7 @@ http {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .metric-value {
     font-size: 2rem;
   }
@@ -939,36 +939,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const wsUrl = `ws://${window.location.host}/ws`;
     let socket;
     let reconnectInterval = 5000;
-    
+
     function connectWebSocket() {
         socket = new WebSocket(wsUrl);
-        
+
         socket.onopen = function(event) {
             console.log('Connected to GitGuard Codex real-time updates');
             showNotification('Connected to real-time updates', 'success');
         };
-        
+
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
             handleRealTimeUpdate(data);
         };
-        
+
         socket.onclose = function(event) {
             console.log('Disconnected from GitGuard Codex');
             showNotification('Disconnected from real-time updates', 'warning');
-            
+
             // Reconnect after interval
             setTimeout(connectWebSocket, reconnectInterval);
         };
-        
+
         socket.onerror = function(error) {
             console.error('WebSocket error:', error);
         };
     }
-    
+
     function handleRealTimeUpdate(data) {
         const { type, entity } = data;
-        
+
         switch(type) {
             case 'pr_updated':
                 updatePRStatus(entity);
@@ -984,32 +984,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     }
-    
+
     function updatePRStatus(pr) {
         const prElement = document.querySelector(`[data-pr-id="${pr.id}"]`);
         if (prElement) {
             prElement.classList.add('updating');
-            
+
             // Update risk score
             const riskElement = prElement.querySelector('.risk-score');
             if (riskElement) {
                 riskElement.textContent = Math.round(pr.risk_score);
                 riskElement.className = `risk-score ${getRiskClass(pr.risk_score)}`;
             }
-            
+
             // Update status
             const statusElement = prElement.querySelector('.pr-status');
             if (statusElement) {
                 statusElement.textContent = pr.state;
                 statusElement.className = `status-badge status-${pr.state}`;
             }
-            
+
             setTimeout(() => {
                 prElement.classList.remove('updating');
             }, 2000);
         }
     }
-    
+
     function refreshKnowledgeMetrics() {
         fetch('/api/knowledge/metrics')
             .then(response => response.json())
@@ -1018,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => console.error('Failed to refresh metrics:', error));
     }
-    
+
     function updateMetricsDisplay(metrics) {
         const metricElements = {
             'total-repos': metrics.total_repos,
@@ -1026,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'total-prs': metrics.total_prs,
             'avg-health': Math.round(metrics.avg_health_score)
         };
-        
+
         Object.entries(metricElements).forEach(([id, value]) => {
             const element = document.getElementById(id);
             if (element) {
@@ -1036,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -1044,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="notification-message">${message}</span>
             <button class="notification-close" onclick="this.parentElement.remove()">×</button>
         `;
-        
+
         // Add to page
         let container = document.querySelector('.notification-container');
         if (!container) {
@@ -1052,9 +1052,9 @@ document.addEventListener('DOMContentLoaded', function() {
             container.className = 'notification-container';
             document.body.appendChild(container);
         }
-        
+
         container.appendChild(notification);
-        
+
         // Auto-remove after 5 seconds
         setTimeout(() => {
             if (notification.parentElement) {
@@ -1062,16 +1062,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 5000);
     }
-    
+
     function getRiskClass(riskScore) {
         if (riskScore >= 70) return 'high';
         if (riskScore >= 40) return 'medium';
         return 'low';
     }
-    
+
     // Initialize WebSocket connection
     connectWebSocket();
-    
+
     // Refresh metrics every 30 seconds
     setInterval(refreshKnowledgeMetrics, 30000);
 });

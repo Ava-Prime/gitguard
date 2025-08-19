@@ -13,8 +13,8 @@ GitGuard implements a flexible coverage gate system that:
 ## Development Phases
 
 ### 1. Initial Development (`initial_dev`)
-**Coverage Threshold:** 60%  
-**Coverage Delta Threshold:** -5.0%  
+**Coverage Threshold:** 60%
+**Coverage Delta Threshold:** -5.0%
 **Policy Tests:** Relaxed enforcement
 
 **Characteristics:**
@@ -40,8 +40,8 @@ def new_feature():
 ```
 
 ### 2. Feature Development (`feature_dev`)
-**Coverage Threshold:** 70%  
-**Coverage Delta Threshold:** -2.0%  
+**Coverage Threshold:** 70%
+**Coverage Delta Threshold:** -2.0%
 **Policy Tests:** Standard enforcement
 
 **Characteristics:**
@@ -56,8 +56,8 @@ def new_feature():
 - Some missing test coverage
 
 ### 3. Pre-Production (`pre_production`)
-**Coverage Threshold:** 80%  
-**Coverage Delta Threshold:** -1.0%  
+**Coverage Threshold:** 80%
+**Coverage Delta Threshold:** -1.0%
 **Policy Tests:** Strict enforcement
 
 **Characteristics:**
@@ -73,8 +73,8 @@ def new_feature():
 - Phase transitions from experimental to production
 
 ### 4. Production (`production`)
-**Coverage Threshold:** 85%  
-**Coverage Delta Threshold:** -0.5%  
+**Coverage Threshold:** 85%
+**Coverage Delta Threshold:** -0.5%
 **Policy Tests:** Strict enforcement
 
 **Characteristics:**
@@ -100,7 +100,7 @@ The system automatically detects the appropriate development phase using:
 .*/test_.*_draft\.py$
 .*/.*_experimental\.py$
 
-# Production patterns  
+# Production patterns
 .*/apps/guard-(api|brain|codex|ci)/.*\.py$
 .*/policies/.*\.rego$
 .*/ops/.*\.(yml|yaml)$

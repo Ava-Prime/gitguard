@@ -6,7 +6,7 @@ export default {
       'always',
       [
         'feat',
-        'fix', 
+        'fix',
         'docs',
         'style',
         'refactor',

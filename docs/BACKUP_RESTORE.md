@@ -34,9 +34,9 @@ ENVIRONMENT=staging STAGING_DATABASE_URL="postgresql://..." make restore-rehears
 
 ### 1. PostgreSQL Backups
 
-**Schedule:** Daily  
-**Retention:** 7 days  
-**Format:** Custom format (`.dump`)  
+**Schedule:** Daily
+**Retention:** 7 days
+**Format:** Custom format (`.dump`)
 **Location:** `/backups/pg_codex_YYYY-MM-DD.dump`
 
 ```bash
@@ -60,9 +60,9 @@ DATABASE_URL="postgresql://..." ./scripts/backup_postgres.sh
 
 ### 2. JetStream Snapshots
 
-**Schedule:** Pre-deployment  
-**Retention:** 14 days  
-**Format:** Directory snapshot  
+**Schedule:** Pre-deployment
+**Retention:** 14 days
+**Format:** Directory snapshot
 **Location:** `/backups/js_gh_YYYY-MM-DD/`
 
 ```bash
@@ -82,8 +82,8 @@ make backup-jetstream
 
 ### 3. Restore Rehearsal
 
-**Schedule:** Weekly (staging)  
-**Purpose:** Validate backup viability  
+**Schedule:** Weekly (staging)
+**Purpose:** Validate backup viability
 **Environment:** Staging only
 
 ```bash
@@ -209,7 +209,7 @@ make backup-cleanup
    ```bash
    # Create database
    createdb gitguard_restored
-   
+
    # Restore from backup
    pg_restore -d "postgresql://user:pass@host:5432/gitguard_restored" \
      /backups/pg_codex_YYYY-MM-DD.dump
@@ -219,7 +219,7 @@ make backup-cleanup
    ```bash
    # Start NATS server
    make up
-   
+
    # Restore stream
    nats stream restore GH /backups/js_gh_YYYY-MM-DD
    ```
@@ -228,22 +228,22 @@ make backup-cleanup
    ```bash
    # Update environment variables
    export DATABASE_URL="postgresql://user:pass@host:5432/gitguard_restored"
-   
+
    # Start services
    make up
-   
+
    # Verify org-brain functionality
    make health
-   
+
    # Test Graph API endpoints
    curl -f http://localhost:8002/graph/health
-   
+
    # Verify policy transparency
    curl -f http://localhost:8000/prs/1.html | grep -q "source-ref"
-   
+
    # Test Mermaid graph generation
    curl -f http://localhost:8000/prs/1.html | grep -q "mermaid"
-   
+
    # Validate owners index
    curl -f http://localhost:8000/owners.html
    ```
@@ -299,7 +299,7 @@ grep -q "GRAPH_API_ENABLED" /backups/config_backup_*.env || echo "WARNING: Graph
         severity: critical
       annotations:
         summary: "GitGuard backup missing for > 24h"
-        
+
     - alert: RestoreRehearsalFailed
       expr: restore_rehearsal_success != 1
       labels:

@@ -1,7 +1,7 @@
 # Release Windows Policy
 
-**Policy ID:** POL-001  
-**Status:** Active  
+**Policy ID:** POL-001
+**Status:** Active
 **Last Updated:** 2024-12-19
 
 ## Overview
@@ -64,8 +64,8 @@ Deployments to production environments are restricted to business hours to ensur
 
 ## Enforcement
 
-**OPA Policy:** `repo.guard.blocks_merge`  
-**Trigger:** Pull request merge attempt outside release window  
+**OPA Policy:** `repo.guard.blocks_merge`
+**Trigger:** Pull request merge attempt outside release window
 **Action:** Block merge with clear explanation and next available window
 
 ### Override Process

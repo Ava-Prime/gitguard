@@ -19,27 +19,27 @@ jobs:
     name: Test & Build
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        
+
       - name: Setup Python
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: '3.11'
-          
+
       - name: Cache dependencies
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          
+
       - name: Detect Coverage Requirements
         id: coverage-gate
         run: |
@@ -49,68 +49,68 @@ jobs:
           else
             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | tr '\n' ',' || echo "")
           fi
-          
+
           # Set default values in case script fails
           echo "DEVELOPMENT_PHASE=development" >> $GITHUB_ENV
           echo "COVERAGE_THRESHOLD=70" >> $GITHUB_ENV
           echo "COVERAGE_DELTA_THRESHOLD=5" >> $GITHUB_ENV
           echo "ALLOW_INCOMPLETE_TESTS=true" >> $GITHUB_ENV
           echo "ENFORCE_POLICY_TESTS=false" >> $GITHUB_ENV
-          
+
           # Run coverage gate detector if it exists
           if [ -f "scripts/coverage_gate_detector.py" ]; then
             python scripts/coverage_gate_detector.py \
               --changed-files="$CHANGED_FILES" \
               --output-format=env >> $GITHUB_ENV || true
-            
+
             # Also output as step outputs for conditional logic
             python scripts/coverage_gate_detector.py \
               --changed-files="$CHANGED_FILES" \
               --output-format=env | while IFS='=' read -r key value; do
                 echo "$key=$value" >> $GITHUB_OUTPUT
               done || true
-            
+
             # Log the analysis for debugging
             echo "Coverage Gate Analysis:"
             python scripts/coverage_gate_detector.py --changed-files="$CHANGED_FILES" || echo "Coverage gate detector failed, using defaults"
           else
             echo "Coverage gate detector not found, using default values"
           fi
-          
+
       - name: Secrets Scan
         uses: gitleaks/gitleaks-action@6fb524e70da447afc7e44799c51f890bd5cc2811 # v2.3.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config-path: .gitleaks.toml
-          
+
       - name: Lint & Type Check
         run: |
           # Comprehensive linting with security rules
           ruff check . --select=ALL --ignore=D,ANN,COM,EM,FBT,TRY,PLR0913,PLR0912,PLR0915
-          
+
           # Code formatting check
           black --check --diff .
-          
+
           # Strict type checking
           mypy . --strict --ignore-missing-imports --no-error-summary
-          
+
           # Import sorting
           isort --check-only --diff .
-          
+
       - name: Test with Dynamic Coverage Gates
         run: |
           # Use dynamic coverage threshold based on development phase
           echo "Development Phase: $DEVELOPMENT_PHASE"
           echo "Coverage Threshold: $COVERAGE_THRESHOLD%"
           echo "Coverage Delta Threshold: $COVERAGE_DELTA_THRESHOLD%"
-          
+
           # Configure pytest markers based on phase
           PYTEST_MARKERS=""
           if [ "$ALLOW_INCOMPLETE_TESTS" = "true" ]; then
             PYTEST_MARKERS="-m 'not (incomplete_fixtures or requires_full_implementation)'"
           fi
-          
+
           # Run tests with dynamic coverage requirements
           pytest \
             --cov=./apps \
@@ -123,7 +123,7 @@ jobs:
             --strict-config \
             $PYTEST_MARKERS \
             -v
-            
+
       - name: Validate Coverage Delta
         if: github.event_name == 'pull_request' && github.event.pull_request.base.sha != ''
         run: |
@@ -136,13 +136,13 @@ jobs:
           else
             echo "Coverage delta validator not found, skipping validation"
           fi
-            
+
       - name: Install OPA
         run: |
           curl -L -o opa https://openpolicyagent.org/downloads/v0.58.0/opa_linux_amd64_static
           chmod +x opa
           sudo mv opa /usr/local/bin/
-          
+
       - name: OPA Policy Tests
         run: |
           # Run OPA policy unit tests with conditional enforcement
@@ -153,13 +153,13 @@ jobs:
             echo "Running OPA policy tests with relaxed enforcement (development phase)"
             opa test policies/ -v || echo "Policy tests failed but continuing due to development phase"
           fi
-          
+
           # Validate policy syntax
           opa fmt --diff policies/
-          
+
           # Run policy linting
           opa fmt --list policies/ | xargs -I {} sh -c 'echo "Checking: {}"; opa fmt --diff {}'
-          
+
       - name: Policy Integration Tests
         run: |
           # Test policy evaluation with sample data
@@ -168,18 +168,18 @@ jobs:
           else
             echo "Policy integration tests not found, skipping"
           fi
-          
+
           # Validate policy decision explanations
           if [ -f "apps/guard-codex/test_policy_integration.py" ]; then
             cd apps/guard-codex && python test_policy_integration.py || echo "Policy decision validation failed, continuing"
           else
             echo "Policy decision validation not found, skipping"
           fi
-          
+
       - name: Build
         run: |
           python -m build
-          
+
       - name: Generate SBOM with Syft
         uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
         with:
@@ -188,7 +188,7 @@ jobs:
           output-file: sbom.spdx.json
           upload-artifact: true
           upload-release-assets: true
-          
+
       - name: Upload artifacts
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
@@ -198,7 +198,7 @@ jobs:
             coverage.xml
             sbom.spdx.json
             dist/
-            
+
   container:
     name: Build & Sign Container
     runs-on: ubuntu-latest
@@ -211,20 +211,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        
+
       - name: Install cosign
         uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
-        
+
       - name: Log in to Container Registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
@@ -242,7 +242,7 @@ jobs:
             org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
             org.opencontainers.image.title=GitGuard
             org.opencontainers.image.description=Policy-driven Git repository governance and compliance automation
-            
+
       - name: Build and push container
         id: build
         uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445 # v6.5.0
@@ -254,45 +254,45 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          
+
       - name: Generate container SBOM
         uses: anchore/sbom-action@v0
         with:
           image: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
           format: spdx-json
           output-file: container-sbom.spdx.json
-          
+
       - name: Sign container image
         run: |
           cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-          
+
       - name: Attest SBOM
         run: |
           cosign attest --yes --predicate container-sbom.spdx.json --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-          
+
       - name: Verify container signature and attestation
         run: |
           # Verify the container signature
           cosign verify ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-          
+
           # Verify the SBOM attestation
           cosign verify-attestation --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-          
+
           echo "✅ Container signature and SBOM attestation verified successfully"
-          
+
       - name: Upload container artifacts
         uses: actions/upload-artifact@v4
         with:
           name: container-artifacts
           path: |
             container-sbom.spdx.json
-            
+
   security:
     name: Security & Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      
+
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.24.4
         with:
@@ -301,21 +301,21 @@ jobs:
           format: 'sarif'
           output: 'trivy-fs-results.sarif'
           severity: 'CRITICAL,HIGH,MEDIUM'
-          
+
       - name: Run Trivy config scan
         uses: aquasecurity/trivy-action@0.24.4
         with:
           scan-type: 'config'
           format: 'sarif'
           output: 'trivy-config-results.sarif'
-          
+
       - name: Generate comprehensive SBOM
         uses: anchore/sbom-action@v0
         with:
           path: .
           format: 'spdx-json'
           output-file: 'security-sbom.spdx.json'
-          
+
       - name: Vulnerability scan with Grype
         uses: anchore/scan-action@d43cc1dfea6a99ed123bf8f3133f1797c9b44492 # v4.0.0
         with:
@@ -324,14 +324,14 @@ jobs:
           severity-cutoff: 'high'
           output-format: 'sarif'
           output-file: 'grype-results.sarif'
-          
+
       - name: Dependency license check
         run: |
           pip install pip-licenses
           pip-licenses --format=json --output-file=licenses.json
           # Fail on copyleft licenses in production dependencies
           pip-licenses --fail-on='GPL.*' --packages $(pip freeze | grep -v '\-e' | cut -d'=' -f1)
-          
+
       - name: Upload security results
         uses: github/codeql-action/upload-sarif@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
@@ -339,7 +339,7 @@ jobs:
             trivy-fs-results.sarif
             trivy-config-results.sarif
             grype-results.sarif
-            
+
       - name: Upload security artifacts
         uses: actions/upload-artifact@v4
         with:

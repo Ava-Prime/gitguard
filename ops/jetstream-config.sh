@@ -54,7 +54,7 @@ check_connection() {
 # Create stream with unbounded retention (Phase 3a)
 create_unbounded_stream() {
     log "Creating JetStream with unbounded retention for 72h replay capability"
-    
+
     nats --server="$NATS_URL" stream add "$STREAM_NAME" \
         --subjects="$SUBJECT" \
         --retention=limits \
@@ -68,19 +68,19 @@ create_unbounded_stream() {
         --allow-rollup \
         --deny-delete \
         --deny-purge=false
-    
+
     success "Created stream '$STREAM_NAME' with unbounded retention"
 }
 
 # Update to sane retention limits (Phase 3b)
 update_to_sane_limits() {
     log "Updating JetStream to sane retention limits"
-    
+
     nats --server="$NATS_URL" stream edit "$STREAM_NAME" \
         --max-age=24h \
         --max-msgs=1000000 \
         --max-bytes=10GB
-    
+
     success "Updated stream '$STREAM_NAME' to sane retention limits"
 }
 
@@ -94,7 +94,7 @@ show_stream_info() {
 backup_stream_config() {
     local backup_file="jetstream-backup-$(date +%Y%m%d-%H%M%S).json"
     log "Backing up stream configuration to: $backup_file"
-    
+
     nats --server="$NATS_URL" stream info "$STREAM_NAME" --json > "$backup_file"
     success "Stream configuration backed up to: $backup_file"
 }
@@ -106,7 +106,7 @@ restore_stream_config() {
         error "Backup file not found: $backup_file"
         exit 1
     fi
-    
+
     log "Restoring stream configuration from: $backup_file"
     # Note: This would require custom logic to parse JSON and recreate stream
     warn "Stream restoration requires manual configuration based on backup file"
@@ -115,7 +115,7 @@ restore_stream_config() {
 # Monitor stream metrics
 monitor_stream() {
     log "Monitoring stream '$STREAM_NAME' (Press Ctrl+C to stop)"
-    
+
     while true; do
         clear
         echo "=== JetStream Monitor - $(date) ==="
@@ -140,7 +140,7 @@ monitor_stream() {
 purge_stream() {
     warn "This will purge ALL messages from stream '$STREAM_NAME'"
     read -p "Are you sure? Type 'yes' to confirm: " confirm
-    
+
     if [[ "$confirm" == "yes" ]]; then
         nats --server="$NATS_URL" stream purge "$STREAM_NAME" --force
         success "Stream '$STREAM_NAME' purged"
@@ -153,7 +153,7 @@ purge_stream() {
 delete_stream() {
     warn "This will DELETE stream '$STREAM_NAME' and ALL its data"
     read -p "Are you sure? Type 'DELETE' to confirm: " confirm
-    
+
     if [[ "$confirm" == "DELETE" ]]; then
         nats --server="$NATS_URL" stream delete "$STREAM_NAME" --force
         success "Stream '$STREAM_NAME' deleted"
@@ -195,10 +195,10 @@ main() {
         usage
         exit 1
     fi
-    
+
     check_nats_cli
     check_connection
-    
+
     case "$1" in
         create-unbounded)
             create_unbounded_stream

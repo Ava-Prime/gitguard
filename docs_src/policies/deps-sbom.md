@@ -1,7 +1,7 @@
 # Dependency Security & SBOM Policy
 
-**Policy ID:** POL-003  
-**Status:** Active  
+**Policy ID:** POL-003
+**Status:** Active
 **Last Updated:** 2024-12-19
 
 ## Overview

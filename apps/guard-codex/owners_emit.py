@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Owners index page generation from graph data."""
 
-import psycopg
-import os
 import pathlib
+
+import psycopg
+
 
 def emit_owners_index(db_url: str, docs_dir: str = "docs"):
     """Generate owners.md from graph data showing who owns what files and recent activity."""
@@ -28,18 +29,14 @@ def emit_owners_index(db_url: str, docs_dir: str = "docs"):
     from t left join recent using(owner)
     order by t.files desc, t.owner;
     """
-    
+
     with psycopg.connect(db_url) as c, c.cursor() as cur:
         cur.execute(q)
         rows = cur.fetchall()
-    
-    md = [
-        "# People & Ownership\n",
-        "| Owner | Files | Recent Activity |",
-        "|---|---:|:---|"
-    ]
-    
+
+    md = ["# People & Ownership\n", "| Owner | Files | Recent Activity |", "|---|---:|:---|"]
+
     for o, f, ls in rows:
         md.append(f"| `{o}` | {f} | {ls} |")
-    
+
     pathlib.Path(docs_dir, "owners.md").write_text("\n".join(md), encoding="utf-8")

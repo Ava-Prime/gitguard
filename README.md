@@ -12,13 +12,13 @@ make setup && make up && make demo-quick
 
 ### What you'll see
 
-✅ **Auto-merge for low-risk PRs** - Safe changes merge automatically  
-🚫 **Policy transparency with source code** - See exact OPA rules and inputs that made decisions  
-📊 **Visual relationship graphs** - Mermaid diagrams show file touches and governance connections  
-👥 **Always-current ownership index** - Dynamic owners list from live graph data  
-📚 **Docs portal updating in real-time** - Live documentation with policy explanations  
-🔥 **Chaos engineering drills** - Automated failure testing validates alert systems  
-📈 **SLO monitoring with P99 alerts** - Performance tracking ensures system health  
+✅ **Auto-merge for low-risk PRs** - Safe changes merge automatically
+🚫 **Policy transparency with source code** - See exact OPA rules and inputs that made decisions
+📊 **Visual relationship graphs** - Mermaid diagrams show file touches and governance connections
+👥 **Always-current ownership index** - Dynamic owners list from live graph data
+📚 **Docs portal updating in real-time** - Live documentation with policy explanations
+🔥 **Chaos engineering drills** - Automated failure testing validates alert systems
+📈 **SLO monitoring with P99 alerts** - Performance tracking ensures system health
 
 ### Demo Commands
 

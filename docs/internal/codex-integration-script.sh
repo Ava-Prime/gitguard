@@ -19,13 +19,13 @@ REQUIRED_SERVICES=("temporal" "nats" "postgres" "redis")
 
 echo -e "${PURPLE}"
 cat << 'EOF'
-   ______ _ _    ____                      _    _____          _            
-  / _____|_| |  / ___|                    | |  /  __ \        | |           
- | |  __ _| |_| |  __ _   _  __ _ _ __ __| |  | |  | | ___  __| | _____  __ 
- | | |_ | | __| | |_ | | | |/ _` | '__/ _` |  | |  | |/ _ \/ _` |/ _ \ \/ / 
- | |__| | | |_| |__| | |_| | (_| | | | (_| |  | |__| | (_) \__,_| __/>  <  
-  \_____|_|\__|\____|\__,_|\__,_|_|  \__,_|   \____/ \___/\__,_|\___/_/\_\ 
-                                                                           
+   ______ _ _    ____                      _    _____          _
+  / _____|_| |  / ___|                    | |  /  __ \        | |
+ | |  __ _| |_| |  __ _   _  __ _ _ __ __| |  | |  | | ___  __| | _____  __
+ | | |_ | | __| | |_ | | | |/ _` | '__/ _` |  | |  | |/ _ \/ _` |/ _ \ \/ /
+ | |__| | | |_| |__| | |_| | (_| | | | (_| |  | |__| | (_) \__,_| __/>  <
+  \_____|_|\__|\____|\__,_|\__,_|_|  \__,_|   \____/ \___/\__,_|\___/_/\_\
+
 EOF
 echo -e "${NC}"
 
@@ -38,7 +38,7 @@ echo ""
 check_service() {
     local service=$1
     local port=$2
-    
+
     if nc -z localhost $port 2>/dev/null; then
         echo -e "${GREEN}✅ $service${NC} (port $port)"
         return 0
@@ -62,7 +62,7 @@ echo "Checking existing GitGuard services:"
 SERVICES_OK=true
 
 check_service "Temporal" 7233 || SERVICES_OK=false
-check_service "NATS" 4222 || SERVICES_OK=false  
+check_service "NATS" 4222 || SERVICES_OK=false
 check_service "PostgreSQL" 5432 || SERVICES_OK=false
 check_service "Redis" 6379 || SERVICES_OK=false
 
@@ -82,7 +82,7 @@ echo -e "${YELLOW}📁 Creating Codex Directory Structure...${NC}"
 # Main Codex service
 mkdir -p apps/guard-codex/{src/{activities,workflows,renderers,graph,api},templates,tests}
 
-# Documentation structure  
+# Documentation structure
 mkdir -p docs/{docs/{repos,prs,governance/{adrs,policies},incidents,graph},templates,stylesheets,javascripts}
 
 # Scripts and migrations
@@ -176,12 +176,12 @@ graph TD
     C --> D[Update Knowledge Graph]
     D --> E[Render Documentation]
     E --> F[Publish Portal]
-    
+
     G[Developer] --> H[Views Documentation]
     H --> I[Makes Informed Decisions]
     I --> J[Submits Better PRs]
     J --> A
-    
+
     K[Incident Occurs] --> L[Root Cause Analysis]
     L --> M[Extract Patterns]
     M --> N[Update Policies]
@@ -191,7 +191,7 @@ graph TD
 ## 🚀 Getting Started
 
 1. **Browse Active PRs** - See real-time risk assessments and AI insights
-2. **Explore Knowledge Graph** - Discover connections between code, people, and decisions  
+2. **Explore Knowledge Graph** - Discover connections between code, people, and decisions
 3. **Review Governance** - Understand policies and their automated enforcement
 4. **Learn from Incidents** - See how the system evolves and improves
 
@@ -288,7 +288,7 @@ echo -e "${GREEN}🎉 GitGuard + Codex Integration Complete!${NC}"
 echo ""
 echo -e "${BLUE}📍 Access Points:${NC}"
 echo "• Codex API: http://localhost:8080"
-echo "• Documentation Portal: http://localhost:8081"  
+echo "• Documentation Portal: http://localhost:8081"
 echo "• Health Dashboard: http://localhost:8080/health"
 echo "• Knowledge Search: http://localhost:8080/api/knowledge/search"
 echo "• Health Dashboard: http://localhost:8080/api/repos/ava-prime/gitguard/health"
@@ -319,7 +319,7 @@ if [ -z "${GITHUB_APP_ID:-}" ]; then
 fi
 
 if [ -z "${GITHUB_APP_PRIVATE_KEY:-}" ]; then
-    echo "❌ GITHUB_APP_PRIVATE_KEY environment variable required" 
+    echo "❌ GITHUB_APP_PRIVATE_KEY environment variable required"
     exit 1
 fi
 
@@ -358,12 +358,12 @@ for i in {1..30}; do
         echo "✅ All services healthy"
         break
     fi
-    
+
     if [ $i -eq 30 ]; then
         echo "❌ Health check timeout"
         exit 1
     fi
-    
+
     echo -n "."
     sleep 2
 done
@@ -406,7 +406,7 @@ Transform your GitHub repositories into an AI-powered engineering intelligence p
 GitGuard + Codex extends your existing GitGuard policy enforcement with:
 
 - **🧠 Knowledge Graph**: Automatic extraction and connection of code, people, decisions, and incidents
-- **📚 Living Documentation**: Self-updating portal with AI-generated insights  
+- **📚 Living Documentation**: Self-updating portal with AI-generated insights
 - **🔍 Semantic Search**: Find code, experts, and context across your entire engineering history
 - **📈 Predictive Analytics**: ML-powered risk assessment and expert recommendations
 - **🎓 Organizational Learning**: Automatic pattern detection and policy refinement
@@ -418,7 +418,7 @@ GitGuard + Codex extends your existing GitGuard policy enforcement with:
 git clone https://github.com/ava-prime/gitguard.git
 cd gitguard
 
-# Setup Codex integration  
+# Setup Codex integration
 make codex-setup
 
 # Start the complete platform
@@ -438,7 +438,7 @@ make codex-demo-quick
 ```
 Shows: Auto-merge decision, risk assessment, live docs update
 
-### 🎯 Investor Demo (5 minutes)  
+### 🎯 Investor Demo (5 minutes)
 ```bash
 make codex-demo-investor
 ```
@@ -474,7 +474,7 @@ GitHub Events → NATS → Temporal Workflows → Knowledge Graph → Documentat
 
 **Existing Infrastructure** (unchanged):
 - GitHub App authentication
-- NATS event streaming  
+- NATS event streaming
 - Temporal workflow orchestration
 - OPA policy enforcement
 - Prometheus/Grafana monitoring
@@ -522,7 +522,7 @@ Codex seamlessly extends your current GitGuard setup:
 
 ### Phase 1: Core Intelligence (Completed)
 - ✅ Knowledge graph extraction
-- ✅ AI-powered risk assessment  
+- ✅ AI-powered risk assessment
 - ✅ Automatic documentation generation
 - ✅ Semantic search and connections
 
@@ -562,7 +562,7 @@ GitGuard + Codex is built on the principle of transparent AI governance. Contrib
 echo ""
 echo -e "${BLUE}📊 Demo Commands:${NC}"
 echo "• make codex-demo-knowledge    # Knowledge graph demo"
-echo "• make codex-demo-ai-reviews   # AI review insights demo"  
+echo "• make codex-demo-ai-reviews   # AI review insights demo"
 echo "• make codex-demo-incident     # Incident learning demo"
 echo "• make codex-docs-serve        # Serve docs locally"
 echo ""
@@ -578,7 +578,7 @@ echo -e "${PURPLE}📈 Current Platform Status:${NC}"
 # Get metrics from API
 METRICS=$(curl -s http://localhost:8080/api/knowledge/metrics 2>/dev/null || echo '{}')
 REPOS=$(echo "$METRICS" | jq -r '.total_repos // 0')
-PRS=$(echo "$METRICS" | jq -r '.active_prs // 0') 
+PRS=$(echo "$METRICS" | jq -r '.active_prs // 0')
 SYMBOLS=$(echo "$METRICS" | jq -r '.total_symbols // 0')
 
 echo "Repositories: $REPOS"
@@ -631,7 +631,7 @@ echo ""
 # Interactive demo selection
 echo -e "${YELLOW}Select demo scenario:${NC}"
 echo "1. 🚀 Quick Demo (2 minutes) - Core features"
-echo "2. 🎯 Investor Demo (5 minutes) - ROI and business value"  
+echo "2. 🎯 Investor Demo (5 minutes) - ROI and business value"
 echo "3. 🔧 Technical Demo (10 minutes) - Full platform capabilities"
 echo "4. 🧠 Knowledge Intelligence - AI-powered insights"
 echo "5. 📊 All Demos - Complete experience"
@@ -650,9 +650,9 @@ esac
 run_quick_demo() {
     echo -e "${GREEN}🚀 Quick Demo: Core GitGuard + Codex Features${NC}"
     echo ""
-    
+
     echo -e "${CYAN}Scenario: Developer submits a documentation PR${NC}"
-    
+
     # Low-risk PR that should auto-merge
     DOC_PR='{
         "action": "opened",
@@ -670,27 +670,27 @@ run_quick_demo() {
         },
         "repository": {"full_name": "ava-prime/gitguard"}
     }'
-    
+
     echo "📤 Submitting documentation PR..."
     curl -X POST http://localhost:8080/api/events/github \
          -H "Content-Type: application/json" \
          -d "$DOC_PR" --silent
-    
+
     echo -e "${GREEN}✅ PR submitted${NC}"
     echo ""
-    
+
     echo "🤖 GitGuard + Codex Analysis:"
     sleep 2
-    
+
     # Get PR analysis
     PR_DATA=$(curl -s "http://localhost:8080/api/prs/201/knowledge")
     RISK_SCORE=$(echo "$PR_DATA" | jq -r '.pr.risk_score // 15')
-    
+
     echo "• Risk Score: $RISK_SCORE/100 (LOW)"
     echo "• Policy Check: ✅ PASS - Documentation changes"
     echo "• Auto-merge: ✅ APPROVED - Risk below threshold"
     echo "• Documentation: 📚 UPDATED - Live portal refreshed"
-    
+
     echo ""
     echo -e "${BLUE}📊 What just happened:${NC}"
     echo "1. GitGuard analyzed the PR and calculated low risk"
@@ -698,7 +698,7 @@ run_quick_demo() {
     echo "3. Knowledge graph was updated with new content"
     echo "4. Documentation portal refreshed in real-time"
     echo "5. Total time: 45 seconds with zero human intervention"
-    
+
     echo ""
     echo -e "${GREEN}🎯 Result: 40% faster development cycle${NC}"
 }
@@ -706,22 +706,22 @@ run_quick_demo() {
 run_investor_demo() {
     echo -e "${GREEN}🎯 Investor Demo: ROI and Business Value${NC}"
     echo ""
-    
+
     echo -e "${BLUE}Problem: Engineering teams waste 40% of time on manual processes${NC}"
     echo ""
-    
+
     echo -e "${CYAN}Scenario 1: Smart Auto-merge (saves 2 hours/day)${NC}"
     run_quick_demo
-    
+
     echo ""
     echo -e "${CYAN}Scenario 2: Security Protection (prevents incidents)${NC}"
-    
+
     # High-risk security PR
     SECURITY_PR='{
         "action": "opened",
         "pull_request": {
             "number": 202,
-            "title": "Add SQL query builder with dynamic WHERE clauses", 
+            "title": "Add SQL query builder with dynamic WHERE clauses",
             "body": "Allows building complex queries with user input",
             "user": {"login": "backend-dev"},
             "state": "open",
@@ -733,30 +733,30 @@ run_investor_demo() {
         },
         "repository": {"full_name": "ava-prime/gitguard"}
     }'
-    
+
     curl -X POST http://localhost:8080/api/events/github \
          -H "Content-Type: application/json" \
          -d "$SECURITY_PR" --silent
-    
+
     echo "🚨 Security Analysis Results:"
     echo "• Risk Score: 87/100 (HIGH)"
     echo "• Security Scan: ❌ FAIL - Potential SQL injection"
     echo "• Auto-merge: ❌ BLOCKED - Requires security review"
     echo "• Expert Assigned: @security-team-lead"
-    
+
     echo ""
     echo -e "${CYAN}Scenario 3: Release Window Enforcement${NC}"
-    
+
     # Weekend deployment attempt
     echo "🕐 Simulating weekend deployment attempt..."
     echo "• Time: Friday 18:00 CAT (weekend freeze active)"
     echo "• Action: ❌ BLOCKED - Weekend deployment window"
     echo "• Alternative: 📅 Scheduled for Monday 08:00 CAT"
-    
+
     echo ""
     echo -e "${BLUE}📈 Business Impact Dashboard:${NC}"
     echo ""
-    
+
     cat << 'EOF'
 ┌─────────────────────────────────────────────────────────────┐
 │                     ROI METRICS                             │
@@ -773,7 +773,7 @@ run_investor_demo() {
 │ TOTAL ANNUAL VALUE: $895,000                               │
 └─────────────────────────────────────────────────────────────┘
 EOF
-    
+
     echo ""
     echo -e "${GREEN}🎯 Investment Thesis:${NC}"
     echo "GitGuard + Codex doesn't just automate workflows—"
@@ -784,7 +784,7 @@ EOF
 run_technical_demo() {
     echo -e "${GREEN}🔧 Technical Demo: Full Platform Capabilities${NC}"
     echo ""
-    
+
     echo -e "${CYAN}Architecture Overview:${NC}"
     echo "GitGuard + Codex integrates with your existing infrastructure:"
     echo "• Temporal workflows for reliable processing"
@@ -792,10 +792,10 @@ run_technical_demo() {
     echo "• PostgreSQL + pgvector for knowledge storage"
     echo "• OPA for policy enforcement"
     echo "• MkDocs for beautiful documentation"
-    
+
     echo ""
     echo -e "${CYAN}Demo 1: Code Intelligence Pipeline${NC}"
-    
+
     # Complex PR with multiple analysis dimensions
     COMPLEX_PR='{
         "action": "opened",
@@ -804,7 +804,7 @@ run_technical_demo() {
             "title": "Implement microservice orchestration with circuit breakers",
             "body": "Adds service mesh integration with Istio and implements circuit breaker pattern for fault tolerance",
             "user": {"login": "senior-architect"},
-            "state": "open", 
+            "state": "open",
             "changed_files": 15,
             "additions": 892,
             "deletions": 124,
@@ -813,53 +813,53 @@ run_technical_demo() {
         },
         "repository": {"full_name": "ava-prime/gitguard"}
     }'
-    
+
     echo "📤 Submitting complex architectural PR..."
     curl -X POST http://localhost:8080/api/events/github \
          -H "Content-Type: application/json" \
          -d "$COMPLEX_PR" --silent
-    
+
     echo "🔄 Processing through intelligence pipeline..."
     sleep 3
-    
+
     echo ""
     echo "🧠 AI Analysis Results:"
     echo "• Code Symbols: 23 functions, 5 classes analyzed"
     echo "• Complexity Score: Medium (architectural changes)"
     echo "• Test Coverage: +15% (new integration tests added)"
-    echo "• Performance Impact: Requires benchmarking" 
+    echo "• Performance Impact: Requires benchmarking"
     echo "• Architecture Impact: Updates ADR-007 (Service Mesh)"
     echo "• Expert Reviewers: @platform-team, @performance-team"
-    
+
     echo ""
     echo -e "${CYAN}Demo 2: Knowledge Graph Navigation${NC}"
-    
+
     echo "🔍 Semantic search for 'circuit breaker':"
     SEARCH_RESULTS=$(curl -s "http://localhost:8080/api/knowledge/search?q=circuit%20breaker")
     echo "Found connections to:"
     echo "• 3 related functions in resilience.py"
-    echo "• ADR-005: Fault Tolerance Patterns" 
+    echo "• ADR-005: Fault Tolerance Patterns"
     echo "• 2 previous PRs implementing similar patterns"
     echo "• 1 incident caused by missing circuit breakers"
-    
+
     echo ""
     echo -e "${CYAN}Demo 3: Predictive Risk Assessment${NC}"
-    
+
     echo "🎯 ML-powered risk prediction:"
     echo "• Historical Pattern Match: 73% similar to PR #156"
     echo "• PR #156 Result: Caused performance regression"
     echo "• Recommendation: Require performance benchmarks"
     echo "• Confidence: 85%"
-    
+
     echo ""
     echo -e "${CYAN}Demo 4: Living Documentation${NC}"
-    
+
     echo "📚 Auto-generated documentation updates:"
     echo "• PR Analysis Page: http://localhost:8081/prs/203.html"
     echo "• Architecture Impact: http://localhost:8081/governance/adrs/007.html"
     echo "• Symbol Documentation: http://localhost:8081/graph/symbols.html"
     echo "• Performance Dashboard: http://localhost:8081/repos/health.html"
-    
+
     echo ""
     echo -e "${GREEN}🎯 Technical Differentiators:${NC}"
     echo "✅ Real-time knowledge graph updates"
@@ -873,52 +873,52 @@ run_technical_demo() {
 run_knowledge_demo() {
     echo -e "${GREEN}🧠 Knowledge Intelligence Demo${NC}"
     echo ""
-    
+
     echo -e "${CYAN}Scenario: How GitGuard + Codex Creates Organizational Intelligence${NC}"
     echo ""
-    
+
     echo "🔄 Simulating 6 months of development activity..."
-    
+
     # Simulate historical data
     for i in {1..20}; do
         echo -n "."
         sleep 0.1
     done
     echo ""
-    
+
     echo ""
     echo -e "${BLUE}📊 Knowledge Graph Growth:${NC}"
     echo "• Repositories: 12 tracked"
-    echo "• Code Symbols: 2,847 functions, classes, modules"  
+    echo "• Code Symbols: 2,847 functions, classes, modules"
     echo "• Pull Requests: 486 analyzed"
     echo "• Architecture Decisions: 23 ADRs documented"
     echo "• Incidents: 7 analyzed, learnings extracted"
     echo "• Policy Rules: 15 active, continuously refined"
-    
+
     echo ""
     echo -e "${BLUE}🎯 Intelligence Capabilities:${NC}"
-    
+
     echo ""
     echo "1. 🔍 Expert Finding:"
     echo "   Query: 'Who knows about payment processing?'"
     echo "   Answer: @alice (47 related commits), @bob (23 commits)"
     echo ""
-    
+
     echo "2. 🧬 Impact Analysis:"
     echo "   Query: 'What would changing auth.py affect?'"
     echo "   Answer: 12 downstream services, 34 tests, 3 ADRs"
     echo ""
-    
+
     echo "3. 📈 Trend Detection:"
     echo "   Pattern: Database query complexity increasing"
     echo "   Suggestion: Consider query optimization guidelines"
     echo ""
-    
+
     echo "4. 🎓 Learning Acceleration:"
     echo "   New developer onboarding: 2 weeks → 3 days"
     echo "   Context discovery: Hours → Seconds"
     echo ""
-    
+
     echo -e "${GREEN}🎯 Organizational Intelligence Achieved:${NC}"
     echo "✅ Every code change contributes to institutional knowledge"
     echo "✅ Decisions are transparent and improvable"
@@ -930,24 +930,24 @@ run_knowledge_demo() {
 run_all_demos() {
     echo -e "${PURPLE}🎬 Complete GitGuard + Codex Experience${NC}"
     echo ""
-    
+
     run_quick_demo
     echo ""
     echo "Press Enter to continue to investor demo..."
     read
-    
-    run_investor_demo  
+
+    run_investor_demo
     echo ""
     echo "Press Enter to continue to technical demo..."
     read
-    
+
     run_technical_demo
     echo ""
     echo "Press Enter to continue to knowledge intelligence demo..."
     read
-    
+
     run_knowledge_demo
-    
+
     echo ""
     echo -e "${PURPLE}🎉 Complete Demo Finished!${NC}"
     echo ""
@@ -965,7 +965,7 @@ wait_for_user() {
 
 show_live_metrics() {
     echo -e "${BLUE}📊 Live Platform Metrics:${NC}"
-    
+
     METRICS=$(curl -s http://localhost:8080/api/knowledge/metrics)
     echo "Active PRs: $(echo "$METRICS" | jq -r '.active_prs')"
     echo "Knowledge Entities: $(echo "$METRICS" | jq -r '.total_entities')"

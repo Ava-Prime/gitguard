@@ -8,7 +8,7 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     try {
         # Run the secrets redaction test
         python test_secrets_redaction.py
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ Secrets hygiene tests completed successfully" -ForegroundColor Green
         } else {

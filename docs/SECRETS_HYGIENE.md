@@ -171,10 +171,10 @@ def _scrub(text: str) -> str:
     # Standard pattern matching
     for pat, repl in REDACT:
         text = re.sub(pat, repl, text)
-    
+
     # Custom logic here
     # ...
-    
+
     return text
 ```
 

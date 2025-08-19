@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0  # Full history for change detection
-          
+
       - name: Scan docs for secrets
         uses: gitleaks/gitleaks-action@6fb524e70da447afc7e44799c51f890bd5cc2811 # v2.3.6
         with:
@@ -31,7 +31,7 @@ jobs:
           redact: true
           log-level: error
           fail: true
-          
+
       - name: Check for policy changes
         id: policy-changes
         run: |
@@ -45,23 +45,23 @@ jobs:
             echo "policy_changed=false" >> $GITHUB_OUTPUT
             echo "No policy files changed"
           fi
-          
+
       - name: Install OPA for policy validation
         if: steps.policy-changes.outputs.policy_changed == 'true'
         run: |
           curl -L -o opa https://openpolicyagent.org/downloads/v0.58.0/opa_linux_amd64_static
           chmod +x opa
           sudo mv opa /usr/local/bin/
-          
+
       - name: Validate policy syntax
         if: steps.policy-changes.outputs.policy_changed == 'true'
         run: |
           # Validate all Rego files
           find policies/ -name '*.rego' -exec opa fmt --diff {} \;
-          
+
           # Test policy compilation
           opa test policies/ -v
-          
+
       - name: Require policy approval
         if: steps.policy-changes.outputs.policy_changed == 'true' && github.event_name == 'pull_request'
         run: |
@@ -81,23 +81,23 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-          
+
       - name: Setup Python
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: '3.11'
           cache: 'pip'
-          
+
       - name: Install dependencies
         run: |
           pip install mkdocs-material mkdocs-htmlproofer-plugin markdown-link-check
           pip install mkdocs-mermaid2-plugin mkdocs-git-revision-date-localized-plugin
-          
+
       - name: Validate Markdown syntax
         run: |
           # Check for common Markdown issues
           find docs/ -name '*.md' -exec markdown-link-check --config .markdown-link-check.json {} \;
-          
+
       - name: Check documentation structure
         run: |
           # Ensure required documentation exists
@@ -108,14 +108,14 @@ jobs:
             "docs/runbook.md"
             "docs/security.md"
           )
-          
+
           for file in "${required_files[@]}"; do
             if [[ ! -f "$file" ]]; then
               echo "❌ Required documentation file missing: $file"
               exit 1
             fi
           done
-          
+
       - name: Validate ADR structure
         run: |
           # Check ADR files follow proper naming and structure
@@ -125,7 +125,7 @@ jobs:
                 echo "❌ ADR file $adr doesn't follow naming convention"
                 exit 1
               fi
-              
+
               # Check for required sections
               required_sections=("Status" "Context" "Decision" "Consequences")
               for section in "${required_sections[@]}"; do
@@ -136,16 +136,16 @@ jobs:
               done
             done
           fi
-          
+
       - name: Build docs with strict mode
         run: |
           mkdocs build --strict --verbose
-          
+
       - name: Comprehensive link checking
         run: |
           # Check for dead links with detailed reporting
           mkdocs-htmlproofer ./site --raise-on-warnings
-          
+
       - name: Validate documentation completeness
         run: |
           # Check for TODO/FIXME markers in documentation
@@ -153,13 +153,13 @@ jobs:
             echo "❌ Documentation contains unresolved TODO/FIXME markers"
             exit 1
           fi
-          
+
           # Check for placeholder content
           if grep -r "Lorem ipsum\|placeholder\|TBD\|Coming soon" docs/ --include="*.md"; then
             echo "❌ Documentation contains placeholder content"
             exit 1
           fi
-          
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site
@@ -174,7 +174,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-          
+
       - name: Check for critical documentation changes
         id: critical-changes
         run: |
@@ -186,7 +186,7 @@ jobs:
             "policies/"
             "docs/adr/"
           )
-          
+
           critical_changed=false
           for pattern in "${critical_patterns[@]}"; do
             if git diff --name-only origin/main...HEAD | grep -q "$pattern"; then
@@ -194,9 +194,9 @@ jobs:
               break
             fi
           done
-          
+
           echo "critical_changed=$critical_changed" >> $GITHUB_OUTPUT
-          
+
       - name: Require critical documentation approval
         if: steps.critical-changes.outputs.critical_changed == 'true'
         run: |
@@ -207,15 +207,15 @@ jobs:
             git diff --name-only origin/main...HEAD | grep -E '(docs/(security|architecture|runbook)\.md|policies/|docs/adr/)'
             exit 1
           fi
-          
+
       - name: Comment PR with Codex link
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const criticalChanged = '${{ steps.critical-changes.outputs.critical_changed }}' === 'true';
-            const warningText = criticalChanged ? 
+            const warningText = criticalChanged ?
               '⚠️ **Critical documentation changed** - Platform team approval required\n\n' : '';
-            
+
             try {
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,

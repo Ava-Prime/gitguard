@@ -22,7 +22,7 @@ try {
     # Check if alerts are loaded
     $rules = Invoke-RestMethod -Uri "http://localhost:9090/api/v1/rules" -ErrorAction Stop
     $codexGroup = $rules.data.groups | Where-Object { $_.name -eq "codex" }
-    
+
     if ($codexGroup) {
         Write-Host "✅ Codex alerts are loaded and active" -ForegroundColor Green
         Write-Host "📋 Found alerts:" -ForegroundColor Cyan

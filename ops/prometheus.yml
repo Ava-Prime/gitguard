@@ -9,19 +9,19 @@ scrape_configs:
   - job_name: 'gitguard-api'
     static_configs:
       - targets: ['guard-api:8080']
-    
+
   - job_name: 'temporal'
     static_configs:
       - targets: ['temporal:8233']
-      
+
   - job_name: 'nats'
     static_configs:
       - targets: ['nats:8222']
-      
+
   - job_name: 'redis'
     static_configs:
       - targets: ['redis:6379']
-      
+
   - job_name: 'guard-codex'
     static_configs:
       - targets: ['guard-codex:8090']

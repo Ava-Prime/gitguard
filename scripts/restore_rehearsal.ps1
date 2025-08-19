@@ -21,17 +21,17 @@ function Write-Log {
 function Test-PreflightChecks {
     Write-Host "Running pre-flight checks..." -ForegroundColor Cyan
     Write-Log "Running pre-flight checks"
-    
+
     if ($env:ENVIRONMENT -ne "staging") {
         Write-Host "Warning: Not running in staging environment" -ForegroundColor Yellow
         Write-Log "WARNING: Not running in staging environment"
     }
-    
+
     if (-not $env:STAGING_DATABASE_URL) {
         Write-Host "Warning: STAGING_DATABASE_URL not set" -ForegroundColor Yellow
         Write-Log "WARNING: STAGING_DATABASE_URL not set"
     }
-    
+
     Write-Host "Pre-flight checks completed" -ForegroundColor Green
     Write-Log "SUCCESS: Pre-flight checks completed"
 }
@@ -44,20 +44,20 @@ $script:jsSnapshot = ""
 function New-TestBackup {
     Write-Host "Creating test backup files..." -ForegroundColor Cyan
     Write-Log "Creating test backup files"
-    
+
     $script:pgBackup = "$BackupDir\pg_codex_$BackupDate.dump"
     $script:jsSnapshot = "$BackupDir\js_gh_$BackupDate"
-    
+
     # Create mock PostgreSQL backup
     $pgContent = "-- Mock PostgreSQL backup for $BackupDate`n-- This is a test backup file`nCREATE TABLE test_table (id SERIAL PRIMARY KEY);"
     $pgContent | Out-File -FilePath $script:pgBackup -Encoding UTF8
-    
+
     # Create mock JetStream snapshot directory
     New-Item -ItemType Directory -Path $script:jsSnapshot -Force | Out-Null
     $jsContent = '{"stream": "GH", "messages": 100, "date": "' + $BackupDate + '"}'
     $jsContent | Out-File -FilePath "$script:jsSnapshot\stream.json" -Encoding UTF8
     New-Item -ItemType Directory -Path "$script:jsSnapshot\msgs" -Force | Out-Null
-    
+
     Write-Host "Test backup files created" -ForegroundColor Green
     Write-Log "SUCCESS: Test backup files created"
 }
@@ -66,7 +66,7 @@ function New-TestBackup {
 function Test-BackupFiles {
     Write-Host "Validating backup files..." -ForegroundColor Cyan
     Write-Log "Validating backup files"
-    
+
     # Check PostgreSQL backup
     if (Test-Path $script:pgBackup) {
         $size = (Get-Item $script:pgBackup).Length
@@ -77,7 +77,7 @@ function Test-BackupFiles {
         Write-Log "ERROR: PostgreSQL backup not found"
         exit 1
     }
-    
+
     # Check JetStream snapshot
     if (Test-Path $script:jsSnapshot) {
         Write-Host "JetStream snapshot found: $script:jsSnapshot" -ForegroundColor Green
@@ -93,17 +93,17 @@ function Test-BackupFiles {
 function Test-PortalFunctionality {
     Write-Host "Testing portal functionality (simulated)..." -ForegroundColor Cyan
     Write-Log "Testing portal functionality"
-    
+
     Write-Host "Simulating schema validation..." -ForegroundColor Cyan
     Start-Sleep -Seconds 2
     Write-Host "Schema validation passed (simulated)" -ForegroundColor Green
     Write-Log "SUCCESS: Schema validation simulated"
-    
+
     Write-Host "Simulating JetStream connectivity test..." -ForegroundColor Cyan
     Start-Sleep -Seconds 1
     Write-Host "JetStream connectivity test passed (simulated)" -ForegroundColor Green
     Write-Log "SUCCESS: JetStream connectivity simulated"
-    
+
     Write-Host "Portal functionality tests completed" -ForegroundColor Green
     Write-Log "SUCCESS: Portal functionality tests completed"
 }
@@ -113,9 +113,9 @@ function New-RehearsalReport {
     param(
         [int]$Duration
     )
-    
+
     $reportFile = "$BackupDir\restore_rehearsal_${BackupDate}_$(Get-Date -Format 'HHmmss').report"
-    
+
     $reportContent = "# Restore Rehearsal Report`n`n"
     $reportContent += "**Date:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')`n"
     $reportContent += "**Backup Date:** $BackupDate`n"
@@ -157,10 +157,10 @@ try {
     New-TestBackup
     Test-BackupFiles
     Test-PortalFunctionality
-    
+
     $duration = [int]((Get-Date) - $startTime).TotalSeconds
     New-RehearsalReport -Duration $duration
-    
+
     Write-Host ""
     Write-Host "Restore Rehearsal Completed Successfully!" -ForegroundColor Green
     Write-Host "Backup structure: VALIDATED" -ForegroundColor Green
@@ -169,7 +169,7 @@ try {
     Write-Host "Report generation: COMPLETED" -ForegroundColor Green
     Write-Host ""
     Write-Host "Total time: $([math]::Floor($duration / 60)) minutes $($duration % 60) seconds" -ForegroundColor Cyan
-    
+
 } catch {
     Write-Host "Rehearsal failed: $($_.Exception.Message)" -ForegroundColor Red
     Write-Log "ERROR: Rehearsal failed: $($_.Exception.Message)"

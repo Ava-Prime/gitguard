@@ -80,7 +80,7 @@ if nats stream snapshot "$STREAM_NAME" "$SNAPSHOT_PATH"; then
     else
         SNAPSHOT_SIZE="unknown"
     fi
-    
+
     log "Snapshot completed successfully: $SNAPSHOT_PATH ($SNAPSHOT_SIZE)"
     echo -e "${GREEN}✅ Snapshot created: $SNAPSHOT_PATH ($SNAPSHOT_SIZE)${NC}"
 else

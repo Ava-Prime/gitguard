@@ -2,7 +2,7 @@
 *The Autonomous Repository Steward*
 
 > **Your repositories, under guard**
-> 
+>
 > Enterprise-grade Git workflow automation that enforces quality, prevents incidents, and ships with confidence. GitGuard is the vigilant AI steward that your development teams can trust.
 
 ## 🚀 Quick Start (Press Once, Demo Tomorrow)
@@ -89,7 +89,7 @@ gitguard/
 release_windows:
   block:
     - "Fri 16:00".."Mon 08:00"  # No weekend deployments
-  
+
 automerge:
   max_risk_score: 0.30          # Conservative by default
   coverage_drop_max: -0.2       # Prevent test coverage regression
@@ -172,7 +172,7 @@ image:
 github:
   appId: "123456"
   webhookSecret: "your-webhook-secret"
-  
+
 temporal:
   address: "temporal.gitguard.svc.cluster.local:7233"
 

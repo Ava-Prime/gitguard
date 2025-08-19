@@ -1,7 +1,7 @@
 # Infrastructure Owner Review Policy
 
-**Policy ID:** POL-002  
-**Status:** Active  
+**Policy ID:** POL-002
+**Status:** Active
 **Last Updated:** 2024-12-19
 
 ## Overview
@@ -72,8 +72,8 @@ GitGuard automatically detects when a PR modifies files under `infra/` and appli
 
 ## Enforcement
 
-**OPA Policy:** `repo.guard.deny[msg]` (infra changes rule)  
-**Trigger:** Pull request merge attempt  
+**OPA Policy:** `repo.guard.deny[msg]` (infra changes rule)
+**Trigger:** Pull request merge attempt
 **Action:** Block merge until `owner-approved` label is present
 
 ## Exceptions

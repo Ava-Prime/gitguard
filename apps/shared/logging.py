@@ -1,5 +1,8 @@
-import logging, sys, uuid, time
+import logging
+import sys
+
 import structlog
+
 
 def configure_logging(level: str = "INFO") -> None:
     timestamper = structlog.processors.TimeStamper(fmt="iso")
@@ -23,7 +26,9 @@ def configure_logging(level: str = "INFO") -> None:
         force=True,
     )
 
+
 logger = structlog.get_logger()
+
 
 def request_log_fields(method: str, path: str, status: int, dur_ms: float, rid: str):
     return {

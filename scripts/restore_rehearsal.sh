@@ -59,12 +59,12 @@ info() {
 # Cleanup function
 cleanup_test_environment() {
     info "Cleaning up test environment..."
-    
+
     # Stop any running containers
     if command -v docker &> /dev/null; then
         docker compose -f ops/compose.yml down --remove-orphans 2>/dev/null || true
     fi
-    
+
     # Reset staging database if needed
     if [ -n "$STAGING_DB_URL" ]; then
         info "Staging environment cleanup completed"
@@ -74,12 +74,12 @@ cleanup_test_environment() {
 # Pre-flight checks
 preflight_checks() {
     info "Running pre-flight checks..."
-    
+
     # Check if running in staging environment
     if [ "${ENVIRONMENT:-}" != "staging" ]; then
         warn "Not running in staging environment. Set ENVIRONMENT=staging"
     fi
-    
+
     # Check required tools
     local missing_tools=()
     for tool in pg_restore nats docker; do
@@ -87,48 +87,48 @@ preflight_checks() {
             missing_tools+=("$tool")
         fi
     done
-    
+
     if [ ${#missing_tools[@]} -gt 0 ]; then
         error_exit "Missing required tools: ${missing_tools[*]}"
     fi
-    
+
     # Check staging database URL
     if [ -z "$STAGING_DB_URL" ]; then
         error_exit "STAGING_DATABASE_URL environment variable is not set"
     fi
-    
+
     # Check backup files exist
     if [ ! -f "$PG_BACKUP" ]; then
         error_exit "PostgreSQL backup not found: $PG_BACKUP"
     fi
-    
+
     if [ ! -d "$JS_SNAPSHOT" ]; then
         error_exit "JetStream snapshot not found: $JS_SNAPSHOT"
     fi
-    
+
     success "Pre-flight checks passed"
 }
 
 # Restore PostgreSQL database
 restore_database() {
     info "Restoring PostgreSQL database from $PG_BACKUP..."
-    
+
     # Create a fresh database for testing
     local test_db="codex_restore_test_$(date +%s)"
-    
+
     # Extract connection details
     local db_host db_port db_user
     db_host=$(echo "$STAGING_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
     db_port=$(echo "$STAGING_DB_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
     db_user=$(echo "$STAGING_DB_URL" | sed -n 's/.*\/\/\([^:]*\):.*/\1/p')
-    
+
     # Create test database
     if createdb -h "$db_host" -p "$db_port" -U "$db_user" "$test_db" 2>/dev/null; then
         info "Created test database: $test_db"
     else
         error_exit "Failed to create test database"
     fi
-    
+
     # Restore from backup
     local test_db_url="${STAGING_DB_URL%/*}/$test_db"
     if pg_restore -d "$test_db_url" "$PG_BACKUP" 2>/dev/null; then
@@ -143,10 +143,10 @@ restore_database() {
 # Restore JetStream snapshot
 restore_jetstream() {
     info "Restoring JetStream snapshot from $JS_SNAPSHOT..."
-    
+
     # Create a test stream name
     local test_stream="${STREAM_NAME}_TEST_$(date +%s)"
-    
+
     # Restore the snapshot to test stream
     if nats stream restore "$test_stream" "$JS_SNAPSHOT" 2>/dev/null; then
         success "JetStream snapshot restored to stream: $test_stream"
@@ -154,7 +154,7 @@ restore_jetstream() {
     else
         error_exit "Failed to restore JetStream snapshot"
     fi
-    
+
     # Verify stream contents
     local message_count
     message_count=$(nats stream info "$test_stream" --json 2>/dev/null | jq -r '.state.messages // 0')
@@ -164,59 +164,59 @@ restore_jetstream() {
 # Test portal functionality
 test_portal_functionality() {
     info "Testing portal functionality without GitHub..."
-    
+
     # Set environment variables for testing
     export DATABASE_URL="$TEST_DATABASE_URL"
     export JETSTREAM_STREAM="$TEST_STREAM_NAME"
     export GITHUB_DISABLED="true"  # Disable GitHub integration for test
-    
+
     # Start minimal services for testing
     info "Starting test services..."
-    
+
     # Use timeout to prevent hanging
     if timeout $TEST_TIMEOUT docker compose -f ops/compose.yml up -d guard-codex 2>/dev/null; then
         success "Test services started"
     else
         error_exit "Failed to start test services within ${TEST_TIMEOUT}s"
     fi
-    
+
     # Wait for services to be ready
     sleep 10
-    
+
     # Test database connectivity
     if docker compose -f ops/compose.yml exec -T guard-codex python -c "import psycopg; psycopg.connect('$TEST_DATABASE_URL').close()" 2>/dev/null; then
         success "Database connectivity test passed"
     else
         error_exit "Database connectivity test failed"
     fi
-    
+
     # Test basic portal functionality
     info "Testing basic portal operations..."
-    
+
     # Test schema validation
     if docker compose -f ops/compose.yml exec -T guard-codex python -c "from activities import _ensure_schema; _ensure_schema()" 2>/dev/null; then
         success "Schema validation passed"
     else
         error_exit "Schema validation failed"
     fi
-    
+
     # Test JetStream connectivity
     if docker compose -f ops/compose.yml exec -T guard-codex python -c "import nats; print('JetStream test passed')" 2>/dev/null; then
         success "JetStream connectivity test passed"
     else
         warn "JetStream connectivity test failed (may be expected in isolated test)"
     fi
-    
+
     success "Portal functionality tests completed"
 }
 
 # Cleanup test resources
 cleanup_test_resources() {
     info "Cleaning up test resources..."
-    
+
     # Stop test services
     docker compose -f ops/compose.yml down --remove-orphans 2>/dev/null || true
-    
+
     # Drop test database
     if [ -n "${TEST_DATABASE_URL:-}" ]; then
         local db_name
@@ -225,24 +225,24 @@ cleanup_test_resources() {
         db_host=$(echo "$STAGING_DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
         db_port=$(echo "$STAGING_DB_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
         db_user=$(echo "$STAGING_DB_URL" | sed -n 's/.*\/\/\([^:]*\):.*/\1/p')
-        
+
         dropdb -h "$db_host" -p "$db_port" -U "$db_user" "$db_name" 2>/dev/null || true
         info "Dropped test database: $db_name"
     fi
-    
+
     # Delete test stream
     if [ -n "${TEST_STREAM_NAME:-}" ]; then
         nats stream delete "$TEST_STREAM_NAME" --force 2>/dev/null || true
         info "Deleted test stream: $TEST_STREAM_NAME"
     fi
-    
+
     success "Test resources cleaned up"
 }
 
 # Generate rehearsal report
 generate_report() {
     local report_file="${BACKUP_DIR}/restore_rehearsal_${BACKUP_DATE}_$(date +%H%M%S).report"
-    
+
     cat > "$report_file" << EOF
 # Restore Rehearsal Report
 
@@ -295,12 +295,12 @@ main() {
     echo -e "${BLUE}🎯 Environment: ${ENVIRONMENT:-staging}${NC}"
     echo -e "${BLUE}📁 Backup Directory: $BACKUP_DIR${NC}"
     echo ""
-    
+
     log "Starting restore rehearsal for backup date: $BACKUP_DATE"
-    
+
     # Trap to ensure cleanup on exit
     trap cleanup_test_environment EXIT
-    
+
     # Execute rehearsal steps
     preflight_checks
     restore_database
@@ -308,7 +308,7 @@ main() {
     test_portal_functionality
     cleanup_test_resources
     generate_report
-    
+
     echo -e "\n${GREEN}🎉 Restore Rehearsal Completed Successfully!${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}✅ Database restore: PASSED${NC}"
@@ -317,7 +317,7 @@ main() {
     echo -e "${GREEN}✅ Cleanup: COMPLETED${NC}"
     echo -e "\n${BLUE}📊 Total time: $((SECONDS / 60)) minutes $((SECONDS % 60)) seconds${NC}"
     echo -e "${BLUE}📋 Report: ${BACKUP_DIR}/restore_rehearsal_${BACKUP_DATE}_$(date +%H%M%S).report${NC}"
-    
+
     log "Restore rehearsal completed successfully in $((SECONDS / 60))m $((SECONDS % 60))s"
 }
 

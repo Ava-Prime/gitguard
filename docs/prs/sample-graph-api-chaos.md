@@ -1,7 +1,7 @@
 # PR #789: Enhance Graph API with chaos engineering resilience
 
-**Risk:** 0.45 • **Checks:** ✓  
-**Coverage Δ:** +3.2% • **Perf Δ:** +8ms • **Labels:** feature, graph-api, chaos-engineering  
+**Risk:** 0.45 • **Checks:** ✓
+**Coverage Δ:** +3.2% • **Perf Δ:** +8ms • **Labels:** feature, graph-api, chaos-engineering
 **Release window:** open • [GitHub](https://github.com/example-org/gitguard/pull/789)
 
 ## Summary
@@ -26,12 +26,12 @@ graph TD
   RT["Retry Logic"]
   PG["Policy Graph"]
   OI["Owners Index"]
-  
+
   API --> CB
   CB --> RT
   RT --> PG
   RT --> OI
-  
+
   CB -->|"failure threshold"| FT["Fallback Mode"]
   FT --> Cache["Cached Data"]
 ```
@@ -141,7 +141,7 @@ require_chaos_validation if {
 
 **Endpoints Tested:**
 - ✅ `/api/v1/graph/policies` - Response time: 45ms
-- ✅ `/api/v1/graph/owners` - Response time: 32ms  
+- ✅ `/api/v1/graph/owners` - Response time: 32ms
 - ✅ `/api/v1/graph/mermaid` - Response time: 78ms
 - ✅ Circuit breaker functionality validated
 - ✅ Retry logic tested with simulated failures
