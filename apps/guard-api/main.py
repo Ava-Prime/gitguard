@@ -6,6 +6,15 @@ import time
 
 import httpx
 from fastapi import FastAPI, Header, HTTPException, Request, Response
+from nats.aio.client import Client as NATS
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from pydantic import BaseModel
+from temporalio.client import Client as Temporal
+
+from apps.shared.config import settings
+from apps.shared.logging import configure_logging, logger
+from apps.shared.middleware import RequestIDMiddleware, add_health_routes
+
 from .metrics import (
     MetricsMiddleware,
     record_codex_request,
@@ -15,14 +24,6 @@ from .metrics import (
     record_webhook_signature_validation,
     start_metrics_server,
 )
-from nats.aio.client import Client as NATS
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from pydantic import BaseModel
-from temporalio.client import Client as Temporal
-
-from apps.shared.config import settings
-from apps.shared.logging import configure_logging, logger
-from apps.shared.middleware import RequestIDMiddleware, add_health_routes
 
 # Constants
 LOW_RISK_THRESHOLD = 0.30
@@ -43,9 +44,7 @@ WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")  # empty -> skip verify 
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
 TEMPORAL_ADDRESS = os.getenv("TEMPORAL_ADDRESS", "temporal:7233")
 
-# Global clients (initialized on startup)
-nats_client = None
-temporal_client = None
+# Clients will be stored in app.state instead of global variables
 
 
 class PRAudit(BaseModel):
@@ -73,7 +72,9 @@ def _verify_signature(secret: str, signature: str | None, body_bytes: bytes) -> 
 
 @app.on_event("startup")
 async def startup_event():
-    global nats_client, temporal_client
+    # Initialize clients in app.state instead of global variables
+    app.state.nats_client = None
+    app.state.temporal_client = None
 
     # Start Prometheus metrics server
     metrics_port = int(os.getenv("METRICS_PORT", "8080"))
@@ -82,13 +83,13 @@ async def startup_event():
 
     try:
         # Initialize NATS client
-        nats_client = NATS()
-        await nats_client.connect(servers=[NATS_URL])
+        app.state.nats_client = NATS()
+        await app.state.nats_client.connect(servers=[NATS_URL])
         print(f"[guard-api] Connected to NATS at {NATS_URL}")
         record_connection_status("nats", True)
 
         # Initialize Temporal client
-        temporal_client = await Temporal.connect(TEMPORAL_ADDRESS)
+        app.state.temporal_client = await Temporal.connect(TEMPORAL_ADDRESS)
         print(f"[guard-api] Connected to Temporal at {TEMPORAL_ADDRESS}")
         record_connection_status("temporal", True)
     except Exception as e:
@@ -100,12 +101,12 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    if nats_client:
-        await nats_client.close()
+    if hasattr(app.state, 'nats_client') and app.state.nats_client:
+        await app.state.nats_client.close()
         record_connection_status("nats", False)
-    if temporal_client:
+    if hasattr(app.state, 'temporal_client') and app.state.temporal_client:
         record_connection_status("temporal", False)
-        await temporal_client.close()
+        await app.state.temporal_client.close()
 
 
 @app.post("/webhook/github")
@@ -174,7 +175,7 @@ async def github_webhook(
     # Publish event to NATS for Temporal workflow processing
     subject = f"gh.{event_type}.{action}"
 
-    if nats_client:
+    if hasattr(app.state, 'nats_client') and app.state.nats_client:
         try:
             # Create enriched event payload for Codex workflow
             event_payload = {
@@ -195,7 +196,7 @@ async def github_webhook(
                 "summary": payload["summary"],
             }
 
-            await nats_client.publish(subject, json.dumps(event_payload).encode())
+            await app.state.nats_client.publish(subject, json.dumps(event_payload).encode())
             record_nats_message(subject, True)
             print(f"[guard-api] Published to NATS: {subject}")
         except Exception as e:
