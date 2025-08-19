@@ -22,7 +22,7 @@ permalink: /
   </div>
 </div>
 
-## Key Features
+## 🚀 Key Features
 
 <div class="features-grid">
   <div class="feature-card">
