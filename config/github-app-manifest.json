@@ -1,0 +1,37 @@
+{
+  "name": "GitGuard",
+  "url": "https://github.com/gitguard/gitguard",
+  "hook_attributes": {
+    "url": "https://your-gitguard-instance.com/webhooks/github",
+    "active": true
+  },
+  "redirect_url": "https://your-gitguard-instance.com/auth/github/callback",
+  "callback_urls": [
+    "https://your-gitguard-instance.com/auth/github/callback"
+  ],
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "metadata": "read",
+    "pull_requests": "write",
+    "checks": "write",
+    "statuses": "write",
+    "issues": "write",
+    "actions": "read",
+    "security_events": "read",
+    "members": "read",
+    "administration": "read"
+  },
+  "default_events": [
+    "pull_request",
+    "pull_request_review",
+    "push",
+    "check_run",
+    "status",
+    "issues",
+    "release",
+    "workflow_run",
+    "security_advisory",
+    "dependabot_alert"
+  ]
+}

@@ -226,16 +226,170 @@ risk:
 
 ### Integrating with Your Repository
 
-1. **Install GitHub App** (or configure webhook)
-2. **Configure Repository Settings**:
+#### GitHub App Installation (Recommended)
+
+GitGuard operates as a GitHub App for secure, least-privilege access to your repositories.
+
+##### Required OAuth Scopes
+
+The GitGuard GitHub App requires the following permissions:
+
+**Repository Permissions:**
+- `contents: read` - Read repository files and commits
+- `metadata: read` - Access repository metadata
+- `pull_requests: write` - Create comments, update PR status
+- `checks: write` - Create and update check runs
+- `statuses: write` - Update commit status
+- `issues: write` - Create and update issues for policy violations
+- `actions: read` - Access workflow run information
+- `security_events: read` - Access security alerts and scanning results
+
+**Organization Permissions:**
+- `members: read` - Read organization membership for ownership tracking
+- `administration: read` - Access organization settings for compliance
+
+##### Required Webhook Events
+
+GitGuard subscribes to these webhook events:
+
+**Essential Events:**
+- `pull_request` - PR creation, updates, and state changes
+- `pull_request_review` - Review submissions and state changes
+- `push` - Branch updates and new commits
+- `check_run` - CI/CD pipeline status updates
+- `status` - Commit status updates from other tools
+
+**Enhanced Intelligence Events:**
+- `issues` - Issue creation and updates for policy tracking
+- `release` - Release creation for deployment coordination
+- `workflow_run` - GitHub Actions workflow completion
+- `security_advisory` - Security vulnerability notifications
+- `dependabot_alert` - Dependency security alerts
+
+##### One-Click Installation
+
+**Option 1: GitHub App Manifest (Recommended)**
+
+1. **Create the GitHub App**:
+   ```bash
+   # Use the provided manifest for instant setup
+   curl -X POST \
+     -H "Accept: application/vnd.github.v3+json" \
+     -H "Authorization: token YOUR_PERSONAL_ACCESS_TOKEN" \
+     https://api.github.com/app-manifests/MANIFEST_CODE/conversions
+   ```
+
+2. **Install via Web Interface**:
+   - Visit: `https://github.com/apps/gitguard-YOUR-ORG`
+   - Click "Install"
+   - Select repositories or install organization-wide
+   - Authorize the required permissions
+
+**Option 2: Manual GitHub App Creation**
+
+1. **Navigate to GitHub Settings**:
+   - Go to `https://github.com/settings/apps` (personal) or
+   - `https://github.com/organizations/YOUR-ORG/settings/apps` (organization)
+
+2. **Create New GitHub App**:
+   - **App Name**: `GitGuard-YOUR-ORG`
+   - **Homepage URL**: `https://your-org.github.io/gitguard`
+   - **Webhook URL**: `https://your-gitguard-instance.com/webhooks/github`
+   - **Webhook Secret**: Generate a secure random string
+
+3. **Configure Permissions**: Use the OAuth scopes listed above
+
+4. **Subscribe to Events**: Enable all webhook events listed above
+
+##### Installation Manifest
+
+For automated setup, use this GitHub App manifest:
+
+```json
+{
+  "name": "GitGuard",
+  "url": "https://github.com/gitguard/gitguard",
+  "hook_attributes": {
+    "url": "https://your-gitguard-instance.com/webhooks/github",
+    "active": true
+  },
+  "redirect_url": "https://your-gitguard-instance.com/auth/github/callback",
+  "callback_urls": [
+    "https://your-gitguard-instance.com/auth/github/callback"
+  ],
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "metadata": "read",
+    "pull_requests": "write",
+    "checks": "write",
+    "statuses": "write",
+    "issues": "write",
+    "actions": "read",
+    "security_events": "read",
+    "members": "read",
+    "administration": "read"
+  },
+  "default_events": [
+    "pull_request",
+    "pull_request_review",
+    "push",
+    "check_run",
+    "status",
+    "issues",
+    "release",
+    "workflow_run",
+    "security_advisory",
+    "dependabot_alert"
+  ]
+}
+```
+
+##### Post-Installation Configuration
+
+1. **Configure Repository Settings**:
    ```yaml
    github:
+     app_id: "123456"  # From GitHub App settings
+     installation_id: "789012"  # From installation
+     private_key_path: "/path/to/gitguard.private-key.pem"
+     webhook_secret: "your-webhook-secret"
      repository: "your-org/your-repo"
-     webhook_secret: "your-secret"
    ```
-3. **Set Branch Protection Rules**:
-   - Require GitGuard status checks
+
+2. **Set Branch Protection Rules**:
+   - Require GitGuard status checks: `gitguard/policy-check`
+   - Require GitGuard reviews: `gitguard/risk-assessment`
    - Enable auto-merge for approved PRs
+   - Dismiss stale reviews when new commits are pushed
+
+3. **Verify Installation**:
+   ```bash
+   # Test webhook delivery
+   make test-webhook
+
+   # Verify GitHub App permissions
+   make verify-github-app
+
+   # Check policy evaluation
+   make test-policies
+   ```
+
+#### Alternative: Webhook-Only Setup
+
+For organizations that prefer webhook-only integration:
+
+1. **Create Repository Webhook**:
+   - URL: `https://your-gitguard-instance.com/webhooks/github`
+   - Content Type: `application/json`
+   - Secret: Use the same webhook secret as configured
+   - Events: Select the same events as listed above
+
+2. **Generate Personal Access Token**:
+   - Scopes: `repo`, `read:org`, `read:user`
+   - Store securely in GitGuard configuration
+
+**Note**: GitHub App installation is strongly recommended for production use due to enhanced security, granular permissions, and better audit trails.
 
 ## Troubleshooting
 

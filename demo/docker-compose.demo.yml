@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # GitGuard API Service
+  gitguard-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://gitguard:gitguard@postgres:5432/gitguard
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - OPA_URL=http://opa:8181
+      - PROMETHEUS_URL=http://prometheus:9090
+      - DEMO_MODE=true
+      - LOG_LEVEL=INFO
+      - GITHUB_APP_ID=demo
+      - GITHUB_APP_PRIVATE_KEY=demo-key
+      - WEBHOOK_SECRET=demo-secret
+      - ENCRYPTION_KEY=demo-encryption-key-32-chars-long
+    depends_on:
+      - postgres
+      - redis
+      - temporal
+      - opa
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./demo-data:/app/demo-data:ro
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=gitguard
+      - POSTGRES_USER=gitguard
+      - POSTGRES_PASSWORD=gitguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./demo-data/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gitguard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Temporal Workflow Engine
+  temporal:
+    image: temporalio/auto-setup:1.22
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=gitguard
+      - POSTGRES_PWD=gitguard
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - temporal_data:/etc/temporal
+
+  # Temporal Web UI
+  temporal-web:
+    image: temporalio/web:2.21
+    ports:
+      - "8088:8088"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    depends_on:
+      - temporal
+
+  # Open Policy Agent
+  opa:
+    image: openpolicyagent/opa:latest-envoy
+    ports:
+      - "8181:8181"
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--diagnostic-addr=0.0.0.0:8282"
+      - "--set=plugins.envoy_ext_authz_grpc.addr=:9191"
+      - "--set=plugins.envoy_ext_authz_grpc.enable_reflection=true"
+      - "--set=decision_logs.console=true"
+      - "/policies"
+    volumes:
+      - ./demo-data/policies:/policies:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8181/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./demo-data/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./demo-data/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./demo-data/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Demo Data Generator
+  demo-data-generator:
+    build:
+      context: ..
+      dockerfile: Dockerfile.demo
+    environment:
+      - DATABASE_URL=postgresql://gitguard:gitguard@postgres:5432/gitguard
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./demo-data:/app/demo-data:ro
+    command: python -m gitguard.demo.generate_data
+    restart: "no"
+
+volumes:
+  postgres_data:
+  redis_data:
+  temporal_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    name: gitguard-demo
+    driver: bridge

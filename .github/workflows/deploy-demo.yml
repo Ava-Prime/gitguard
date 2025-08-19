@@ -1,0 +1,233 @@
+name: Deploy Demo Site
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'demo/**'
+      - 'docs/**'
+      - '.github/workflows/deploy-demo.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'demo/**'
+      - 'docs/**'
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create site structure
+        run: |
+          mkdir -p _site
+
+          # Copy demo files
+          cp -r demo/* _site/
+
+          # Copy documentation
+          mkdir -p _site/docs
+          cp -r docs/* _site/docs/
+
+          # Create index redirect
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>GitGuard - Redirecting...</title>
+              <meta http-equiv="refresh" content="0; url=./demo/">
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      min-height: 100vh;
+                      margin: 0;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      text-align: center;
+                  }
+                  .container {
+                      max-width: 400px;
+                      padding: 2rem;
+                  }
+                  .logo {
+                      font-size: 3rem;
+                      margin-bottom: 1rem;
+                  }
+                  .spinner {
+                      border: 3px solid rgba(255,255,255,0.3);
+                      border-radius: 50%;
+                      border-top: 3px solid white;
+                      width: 40px;
+                      height: 40px;
+                      animation: spin 1s linear infinite;
+                      margin: 2rem auto;
+                  }
+                  @keyframes spin {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="logo">🛡️ GitGuard</div>
+                  <h1>Redirecting to Demo...</h1>
+                  <div class="spinner"></div>
+                  <p>If you're not redirected automatically, <a href="./demo/" style="color: white;">click here</a>.</p>
+              </div>
+              <script>
+                  setTimeout(() => {
+                      window.location.href = './demo/';
+                  }, 1000);
+              </script>
+          </body>
+          </html>
+          EOF
+
+          # Create 404 page
+          cat > _site/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>GitGuard - Page Not Found</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      min-height: 100vh;
+                      margin: 0;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      text-align: center;
+                  }
+                  .container {
+                      max-width: 500px;
+                      padding: 2rem;
+                  }
+                  .logo {
+                      font-size: 4rem;
+                      margin-bottom: 1rem;
+                  }
+                  .error-code {
+                      font-size: 6rem;
+                      font-weight: 800;
+                      margin-bottom: 1rem;
+                      opacity: 0.8;
+                  }
+                  .button {
+                      display: inline-block;
+                      background: rgba(255,255,255,0.2);
+                      color: white;
+                      text-decoration: none;
+                      padding: 1rem 2rem;
+                      border-radius: 8px;
+                      margin: 0.5rem;
+                      transition: background 0.3s;
+                  }
+                  .button:hover {
+                      background: rgba(255,255,255,0.3);
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="logo">🛡️</div>
+                  <div class="error-code">404</div>
+                  <h1>Page Not Found</h1>
+                  <p>The page you're looking for doesn't exist or has been moved.</p>
+                  <div>
+                      <a href="./" class="button">🏠 Home</a>
+                      <a href="./demo/" class="button">🚀 Try Demo</a>
+                      <a href="https://github.com/codessa-platform/gitguard" class="button">📚 GitHub</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          # Update demo links to work with GitHub Pages
+          sed -i 's|https://codessa-platform.github.io/gitguard/demo/|./|g' _site/index.html
+          sed -i 's|https://codessa-platform.github.io/gitguard/docs/|./docs/|g' _site/index.html
+
+          # Create sitemap
+          cat > _site/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              <url>
+                  <loc>https://codessa-platform.github.io/gitguard/</loc>
+                  <lastmod>$(date -u +%Y-%m-%d)</lastmod>
+                  <changefreq>weekly</changefreq>
+                  <priority>1.0</priority>
+              </url>
+              <url>
+                  <loc>https://codessa-platform.github.io/gitguard/demo/</loc>
+                  <lastmod>$(date -u +%Y-%m-%d)</lastmod>
+                  <changefreq>weekly</changefreq>
+                  <priority>0.9</priority>
+              </url>
+          </urlset>
+          EOF
+
+          # Create robots.txt
+          cat > _site/robots.txt << 'EOF'
+          User-agent: *
+          Allow: /
+
+          Sitemap: https://codessa-platform.github.io/gitguard/sitemap.xml
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Update deployment status
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outcome }}" = "success" ]; then
+            echo "✅ Demo site deployed successfully to: ${{ steps.deployment.outputs.page_url }}"
+          else
+            echo "❌ Demo site deployment failed"
+            exit 1
+          fi

@@ -1,0 +1,97 @@
+# GitGuard Demo Prometheus Configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: 'demo'
+    cluster: 'gitguard-demo'
+
+rule_files:
+  - "rules/*.yml"
+  - "/etc/prometheus/rules/gitguard_demo.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # GitGuard API Metrics
+  - job_name: 'gitguard-api'
+    static_configs:
+      - targets: ['gitguard-api:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+  # PostgreSQL Metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Redis Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Temporal Metrics
+  - job_name: 'temporal'
+    static_configs:
+      - targets: ['temporal:7233']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # OPA Metrics
+  - job_name: 'opa'
+    static_configs:
+      - targets: ['opa:8181']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+
+  # Node Exporter (if available)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Demo Synthetic Metrics Generator
+  - job_name: 'demo-metrics'
+    static_configs:
+      - targets: ['demo-data-generator:8090']
+    metrics_path: '/demo/metrics'
+    scrape_interval: 5s
+    honor_labels: true
+    params:
+      demo: ['true']
+
+# Recording Rules for GitGuard Demo
+
+# Demo-specific configuration
+remote_write:
+  - url: "http://localhost:9090/api/v1/write"
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'gitguard_demo_.*'
+        target_label: __tmp_demo
+        replacement: 'true'
+
+# Storage configuration for demo
+storage:
+  tsdb:
+    retention.time: 7d
+    retention.size: 1GB
+    wal-compression: true

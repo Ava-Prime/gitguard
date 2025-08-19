@@ -1,0 +1,89 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:0.95" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#heroGradient)"/>
+
+  <!-- Floating particles -->
+  <circle cx="100" cy="80" r="3" fill="#ffffff" opacity="0.6">
+    <animate attributeName="cy" values="80;60;80" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="700" cy="120" r="2" fill="#ffffff" opacity="0.4">
+    <animate attributeName="cy" values="120;100;120" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="650" cy="300" r="4" fill="#ffffff" opacity="0.3">
+    <animate attributeName="cy" values="300;280;300" dur="5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Main content card -->
+  <rect x="50" y="50" width="700" height="300" rx="16" fill="url(#cardGradient)" filter="url(#shadow)"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(80, 80)">
+    <path d="M20 2L20 2C20 2 20 6 20 10C20 18 15 24 10 26C5 24 0 18 0 10C0 6 0 2 0 2L20 2Z" fill="#10b981" stroke="#059669" stroke-width="1"/>
+    <path d="M6 10L9 13L14 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Title -->
+  <text x="120" y="110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="700" fill="#1f2937">GitGuard</text>
+  <text x="120" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="400" fill="#6b7280">The Autonomous Repository Steward</text>
+
+  <!-- Feature highlights -->
+  <g transform="translate(120, 170)">
+    <!-- Auto-merge -->
+    <g>
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#374151">Auto-merge for low-risk PRs</text>
+    </g>
+
+    <!-- Policy transparency -->
+    <g transform="translate(0, 25)">
+      <circle cx="8" cy="8" r="4" fill="#3b82f6"/>
+      <text x="20" y="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#374151">Policy transparency with source code</text>
+    </g>
+
+    <!-- Org-brain intelligence -->
+    <g transform="translate(0, 50)">
+      <circle cx="8" cy="8" r="4" fill="#8b5cf6"/>
+      <text x="20" y="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#374151">Org-brain intelligence & dynamic ownership</text>
+    </g>
+
+    <!-- Real-time monitoring -->
+    <g transform="translate(0, 75)">
+      <circle cx="8" cy="8" r="4" fill="#f59e0b"/>
+      <text x="20" y="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#374151">Real-time monitoring & SLO alerts</text>
+    </g>
+  </g>
+
+  <!-- CTA section -->
+  <g transform="translate(450, 180)">
+    <rect x="0" y="0" width="280" height="120" rx="12" fill="#f8fafc" stroke="#e5e7eb" stroke-width="1"/>
+
+    <!-- Quick start -->
+    <text x="20" y="25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#1f2937">🚀 Quick Start</text>
+
+    <rect x="20" y="35" width="240" height="30" rx="6" fill="#1f2937"/>
+    <text x="30" y="53" font-family="'SF Mono', Monaco, 'Cascadia Code', monospace" font-size="12" fill="#10b981">make setup && make up && make demo</text>
+
+    <text x="20" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#6b7280">Docs: localhost:8001</text>
+    <text x="20" y="100" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#6b7280">API: localhost:8000</text>
+  </g>
+
+  <!-- Version badge -->
+  <g transform="translate(680, 70)">
+    <rect x="0" y="0" width="60" height="24" rx="12" fill="#10b981"/>
+    <text x="30" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">v0.1.0</text>
+  </g>
+</svg>

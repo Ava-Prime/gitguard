@@ -1,30 +1,205 @@
-# GitGuard 🛡️
-*The Autonomous Repository Steward*
-
-GitGuard is an intelligent Git workflow automation platform that enforces quality, prevents incidents, and accelerates delivery through AI-powered code review and autonomous repository management. It features an organizational knowledge system ("org-brain") that provides judgment with receipts - every decision shows its source code and reasoning with full transparency and traceability.
-
-## Visual Overview
-
 <div align="center">
 
-### Policy Transparency with Source Code
-*See exact OPA rules and inputs that made decisions*
+# 🛡️ GitGuard
 
-![Policy Receipt Example](docs/images/policy-receipt-example.svg)
+**AI-Powered Repository Security & Compliance Platform**
 
-### Real-time Governance Dashboard
-*Visual merge rates vs. block reasons with SLO monitoring*
+*Intelligent code analysis, policy enforcement, and security automation for modern development workflows*
 
-![Grafana Dashboard Example](docs/images/grafana-dashboard-example.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Security](https://img.shields.io/badge/security-first-green.svg)](https://github.com/codessa-platform/gitguard/security)
+
+---
+
+## 🌟 **Experience GitGuard Instantly - No Setup Required!**
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+### 🌐 **Live Demo**
+[![Launch Demo](https://img.shields.io/badge/🚀_Launch_Demo-Live_Interactive-success?style=for-the-badge)](https://codessa-platform.github.io/gitguard/demo/)
+
+*Try GitGuard in your browser*
+*No installation needed*
+
+</td>
+<td align="center" width="33%">
+
+### ⚡ **One-Click Deploy**
+[![Deploy on Railway](https://img.shields.io/badge/🚄_Railway-Deploy_Now-blueviolet?style=for-the-badge)](https://railway.app/template/gitguard)
+
+*Production-ready in 60 seconds*
+*Free tier available*
+
+</td>
+<td align="center" width="33%">
+
+### 📦 **Quick Install**
+[![Download Binary](https://img.shields.io/badge/📥_Download-Binary_Release-orange?style=for-the-badge)](https://github.com/codessa-platform/gitguard/releases/latest)
+
+*Pre-built for Linux, Windows, macOS*
+*Single executable, no dependencies*
+
+</td>
+</tr>
+</table>
+
+---
 
 </div>
 
-## Quickstart
+![GitGuard Hero](docs/images/hero-banner.svg)
+
+![Feature Showcase](docs/images/feature-showcase.svg)
+
+### Why GitGuard?
+
+- **🛡️ Zero-Config Security**: Intelligent policies that adapt to your team's workflow
+- **🧠 Org-Brain Intelligence**: Dynamic ownership mapping and expertise routing
+- **⚡ Instant Deployment**: From zero to protected in under 60 seconds
+- **📊 Full Transparency**: Every decision explained with complete audit trails
+- **🔄 Temporal Reliability**: Bulletproof workflow orchestration with automatic recovery
+
+## 📸 Live Examples
+
+### Org-Brain Intelligence in Action
+![Org-Brain Intelligence](docs/images/shipping-receipt-org-brain.svg)
+*Real-time PR digest with relationship mapping and dynamic ownership*
+
+### Interactive Documentation Portal
+![Documentation Portal](docs/images/shipping-receipt-docs-portal.svg)
+*Live policy explorer with GitHub Pages integration*
+
+### Policy Transparency
+![Policy Receipt Example](docs/images/policy-receipt-example.svg)
+*Every decision shows complete reasoning and source code*
+
+### Performance Monitoring
+![Grafana Dashboard Example](docs/images/grafana-dashboard-example.svg)
+*P99 latency tracking and merge rate analytics*
+
+## 🚀 Try GitGuard Instantly
+
+### 🌐 Live Demo - No Installation Required!
+
+**👉 [Launch Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)** - Experience GitGuard in your browser right now!
+
+### ⚡ One-Click Deployment
+
+#### Cloud Platforms
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/gitguard)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/codessa-platform/gitguard)
+
+#### Local Quick Start
+```bash
+# Linux/macOS - One command deployment
+curl -fsSL https://raw.githubusercontent.com/codessa-platform/gitguard/main/scripts/quick-deploy.sh | bash
+
+# Windows PowerShell
+iwr -useb https://raw.githubusercontent.com/codessa-platform/gitguard/main/scripts/quick-deploy.ps1 | iex
+
+# Docker Compose
+git clone https://github.com/codessa-platform/gitguard.git
+cd gitguard && docker-compose up -d
+```
+
+### 📦 Binary Installation
+
+Download pre-built binaries from our [releases page](https://github.com/codessa-platform/gitguard/releases):
 
 ```bash
-make setup && make up && make demo-quick
-# Docs: http://localhost:8001  Grafana: http://localhost:3000  API: http://localhost:8000
+# Linux
+wget https://github.com/codessa-platform/gitguard/releases/latest/download/gitguard-linux
+chmod +x gitguard-linux && ./gitguard-linux serve --demo
+
+# Windows
+# Download gitguard-windows.exe and run: gitguard-windows.exe serve --demo
+
+# macOS
+wget https://github.com/codessa-platform/gitguard/releases/latest/download/gitguard-darwin
+chmod +x gitguard-darwin && ./gitguard-darwin serve --demo
 ```
+
+### 🎯 GitHub App (60 seconds to protection)
+
+1. **Install**: Click → [![Install GitGuard](https://img.shields.io/badge/Install-GitHub%20App-success?logo=github)](https://github.com/apps/gitguard)
+2. **Configure**: Select repositories → Done! 🎉
+
+```bash
+# Verify installation
+curl https://api.github.com/repos/YOUR-ORG/YOUR-REPO/hooks
+# ✅ GitGuard webhook active
+```
+
+### 🛠️ Local Development
+
+```bash
+# Start GitGuard locally
+docker-compose up -d
+
+# 🎭 Demo: Create a test PR and watch the magic
+gh pr create --title "feat: add new feature" --body "Testing GitGuard policies"
+
+# 🔍 Watch GitGuard evaluate in real-time
+curl http://localhost:8080/api/v1/policies/evaluate | jq '.decision.reasoning'
+
+# 📊 View live dashboard
+open http://localhost:3000  # Grafana: P99 latency, merge rates, policy decisions
+open http://localhost:8080  # GitGuard: Policy explorer, org-brain insights
+```
+
+## ✨ Features
+
+### 🌟 **Try Before You Install**
+- **[Live Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)**: Experience GitGuard instantly in your browser
+- **One-Click Deployment**: Deploy to Railway, Render, or Fly.io in seconds
+- **Quick Start Scripts**: Single command setup for Linux, macOS, and Windows
+- **Pre-built Binaries**: Download and run immediately, no dependencies
+
+### 🔒 **Security & Compliance**
+- **Secret Detection**: Multi-layered scanning with entropy analysis
+- **Vulnerability Assessment**: Real-time CVE matching and CVSS scoring
+- **License Compliance**: Automated license compatibility checking
+- **Supply Chain Security**: Dependency graph analysis and risk assessment
+
+### 🤖 **AI-Powered Analysis**
+- **Intelligent Code Review**: Context-aware security recommendations
+- **Risk Scoring**: ML-based threat assessment and prioritization
+- **False Positive Reduction**: Smart filtering with confidence scoring
+- **Adaptive Learning**: Continuous improvement from feedback loops
+
+### 🚀 **Developer Experience**
+- **Zero Configuration**: Works out-of-the-box with sensible defaults
+- **IDE Integration**: VS Code, IntelliJ, and Vim plugins available
+- **CLI Tools**: Comprehensive command-line interface for automation
+- **API-First**: RESTful APIs for custom integrations
+
+### 📊 **Observability & Analytics**
+- **Real-time Dashboards**: Live security metrics and trends
+- **Custom Alerting**: Slack, Teams, PagerDuty integrations
+- **Audit Trails**: Comprehensive logging for compliance
+- **Performance Metrics**: P99 latency tracking and merge rate analytics
+
+## 💡 The GitGuard Advantage
+
+| Traditional Approach | GitGuard Approach |
+|---------------------|-------------------|
+| ❌ Manual code reviews | ✅ AI-powered policy automation |
+| ❌ Static CODEOWNERS files | ✅ Dynamic org-brain intelligence |
+| ❌ Opaque approval processes | ✅ Full transparency with receipts |
+| ❌ Reactive incident response | ✅ Proactive risk prevention |
+| ❌ Complex setup and maintenance | ✅ Zero-config deployment |
+
+### 🎯 Perfect For
+
+- **🏢 Enterprise Teams**: Scaling code review processes across multiple repositories
+- **🚀 Fast-Moving Startups**: Maintaining quality while shipping quickly
+- **🔒 Security-First Orgs**: Enforcing compliance without slowing development
+- **📈 Growing Teams**: Onboarding new developers with intelligent guidance
 
 ### What you'll see
 
@@ -53,22 +228,81 @@ make demo-customer  # 10-min flow: comprehensive governance demo
 5. **📖 Documentation** - Codex generates human-readable PR digest with policy explanations
 6. **🔍 Monitoring** - SLO alerts track freshness P99 and system health
 
-## Documentation
+## 📚 Comprehensive Documentation
 
-📖 **[Live Documentation Portal](https://your-org.github.io/gitguard)** - Complete documentation with policies and guides
+🌟 **[Live Documentation Portal](https://your-org.github.io/gitguard)** - Interactive guides with live examples
 
-- [🚀 Getting Started Guide](GETTING_STARTED.md) - Complete user onboarding
-- [🏗️ Architecture Overview](ARCHITECTURE.md) - System design and data flows
-- [👩‍💻 Developer Guide](DEVELOPER_GUIDE.md) - Local setup and development
-- [🤝 Contributing Guidelines](CONTRIBUTING.md) - How to contribute
+### 📖 Core Guides
+- **[🚀 Getting Started Guide](GETTING_STARTED.md)** - Zero to protected in 60 seconds
+- **[📋 Policy Guide](docs/policies.md)** - Master OPA/Rego with real examples
+- **[🔌 API Reference](http://localhost:8000/docs)** - Complete REST API and webhook docs
+- **[💡 Examples](docs/examples.md)** - Production-ready policy configurations
+
+### 🔧 Advanced Topics
+- **[🏗️ Architecture Overview](ARCHITECTURE.md)** - Deep dive into system design and data flows
+- **[👩‍💻 Developer Guide](DEVELOPER_GUIDE.md)** - Local setup and development
+- **[🐛 Operations Runbook](RUNBOOK.md)** - Troubleshooting and done-done validation checklist
+- **[🤝 Contributing Guidelines](CONTRIBUTING.md)** - Join the community
+
+### 🎯 Specialized Resources
 - [🔗 GitHub Integration](docs/GITHUB_INTEGRATION.md) - PR comments with instant Codex preview links
 - [📊 Prometheus Alerts](docs/PROMETHEUS_ALERTS.md) - Monitoring and SLO configuration
 - [🔐 Secrets Hygiene](docs/SECRETS_HYGIENE.md) - Automated secrets redaction and scanning
-- [📋 Operations Runbook](RUNBOOK.md) - Troubleshooting and done-done validation checklist
 - [🌪️ Chaos Engineering](tests/CHAOS_ENGINEERING.md) - Failure testing and resilience validation
 - [📚 Local Documentation](http://localhost:8001) - Policies and PR digests (when running locally)
-- [🔌 API Reference](http://localhost:8000/docs) - Interactive API docs (when running)
 - [📊 Graph API](http://localhost:8000/graph/pr/{number}) - Read-only graph data endpoint
+
+### 🚀 Quick Links
+- [Policy Templates](docs/examples.md#policy-templates) - Copy-paste configurations
+- [GitHub Actions Integration](docs/examples.md#github-actions) - CI/CD workflows
+- [Org-Brain Setup](GETTING_STARTED.md#org-brain) - Dynamic ownership
+- [Monitoring Setup](GETTING_STARTED.md#monitoring) - Grafana dashboards
+
+### 🔌 MCP Sidecar Integration (Optional Developer Enhancement)
+
+GitGuard includes an optional MCP (Model Context Protocol) sidecar for enhanced developer experience with Claude Desktop integration.
+
+**Features:**
+- **Policy Explanation**: Get detailed explanations of Rego rules and policy decisions
+- **Interactive Policy Exploration**: Query policy logic directly from Claude Desktop
+- **Seamless Integration**: Works alongside existing GitGuard workflows
+
+**Quick Setup:**
+
+1. **Configure Claude Desktop**:
+   ```bash
+   # Copy the provided configuration
+   cp claude_desktop_config.json ~/.config/claude_desktop/config.json
+   ```
+
+2. **Install MCP Server Dependencies**:
+   ```bash
+   pip install -r mcp/requirements.txt
+   ```
+
+3. **Set Environment Variables**:
+   ```bash
+   export GITGUARD_REPO_PATH="/path/to/your/repo"
+   export GITGUARD_POLICIES_DIR="/path/to/gitguard/policies"
+   export GITGUARD_API_BASE_URL="http://localhost:8000"
+   ```
+
+4. **Test Integration**:
+   ```bash
+   # Verify MCP server is working
+   python -m mcp.servers.gitguard_policy
+   ```
+
+**Available MCP Functions:**
+- `get_rego_rule(rule_name)` - Retrieve specific OPA policy rules with explanations
+- `render_policy_block(pr_number)` - Visualize policy evaluation results for a PR
+
+**Usage in Claude Desktop:**
+- Ask: "Explain the critical-files policy rule"
+- Ask: "Show me why PR #123 was blocked"
+- Ask: "What are the current release window policies?"
+
+**Note**: The MCP sidecar is an additive feature that enhances the developer experience without affecting GitGuard's core functionality. GitGuard remains the authoritative system for all policy decisions and repository governance.
 
 ## Architecture
 

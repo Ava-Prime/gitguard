@@ -1,0 +1,77 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "restartPolicyType": "ON_FAILURE"
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "PORT": "8080",
+        "ENVIRONMENT": "production",
+        "LOG_LEVEL": "info",
+        "METRICS_ENABLED": "true",
+        "HEALTH_CHECK_PATH": "/health"
+      }
+    }
+  },
+  "services": [
+    {
+      "name": "gitguard-api",
+      "source": {
+        "type": "image",
+        "image": "ghcr.io/codessa-platform/gitguard:latest"
+      },
+      "variables": {
+        "PORT": "8080",
+        "ENVIRONMENT": "production"
+      }
+    },
+    {
+      "name": "gitguard-postgres",
+      "source": {
+        "type": "image",
+        "image": "postgres:15-alpine"
+      },
+      "variables": {
+        "POSTGRES_DB": "gitguard",
+        "POSTGRES_USER": "gitguard",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"
+      },
+      "volumes": [
+        {
+          "name": "postgres-data",
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      ]
+    },
+    {
+      "name": "gitguard-redis",
+      "source": {
+        "type": "image",
+        "image": "redis:7-alpine"
+      },
+      "volumes": [
+        {
+          "name": "redis-data",
+          "mountPath": "/data"
+        }
+      ]
+    }
+  ],
+  "volumes": [
+    {
+      "name": "postgres-data",
+      "size": "1GB"
+    },
+    {
+      "name": "redis-data",
+      "size": "512MB"
+    }
+  ]
+}

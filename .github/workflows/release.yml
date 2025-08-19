@@ -37,6 +37,37 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build binaries
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          # Create binary builds for multiple platforms
+          mkdir -p dist/binaries
+
+          # Build Linux binary
+          pyinstaller --onefile --name gitguard-linux-amd64 --distpath dist/binaries apps/guard-api/main.py
+
+          # Build Windows binary (cross-compile)
+          pyinstaller --onefile --name gitguard-windows-amd64.exe --distpath dist/binaries apps/guard-api/main.py
+
+          # Create tarball for source distribution
+          tar -czf dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz \
+            --exclude='.git' \
+            --exclude='dist' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            .
+
+          # List generated binaries
+          ls -la dist/binaries/
+
+      - name: Generate checksums
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          cd dist/binaries
+          sha256sum * > checksums.txt
+          cat checksums.txt
 
       - name: Install Syft for SBOM generation
         if: ${{ steps.release.outputs.release_created }}
@@ -138,6 +169,19 @@ jobs:
             cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
           fi
 
+      - name: Sign binaries and checksums
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          # Sign checksums file
+          cosign sign-blob --yes dist/binaries/checksums.txt --output-signature dist/binaries/checksums.txt.sig
+
+          # Sign individual binaries
+          for binary in dist/binaries/gitguard-*; do
+            if [ -f "$binary" ] && [ "$binary" != "dist/binaries/checksums.txt" ]; then
+              cosign sign-blob --yes "$binary" --output-signature "$binary.sig"
+            fi
+          done
+
       - name: Generate release attestation
         if: ${{ steps.release.outputs.release_created }}
         run: |
@@ -180,6 +224,14 @@ jobs:
             gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json
             release-attestation.json
             release-attestation.json.sig
+            dist/binaries/gitguard-linux-amd64
+            dist/binaries/gitguard-linux-amd64.sig
+            dist/binaries/gitguard-windows-amd64.exe
+            dist/binaries/gitguard-windows-amd64.exe.sig
+            dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz
+            dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz.sig
+            dist/binaries/checksums.txt
+            dist/binaries/checksums.txt.sig
           body: |
             ## GitGuard ${{ steps.release.outputs.tag_name }}
 
@@ -199,12 +251,41 @@ jobs:
 
             **Binary Download:**
             ```bash
-            # Download checksums and verify
+            # Linux (AMD64)
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-linux-amd64
+            chmod +x gitguard-linux-amd64
+            ./gitguard-linux-amd64 --version
+
+            # Windows (AMD64)
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-windows-amd64.exe
+
+            # Source Code
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz
+            ```
+
+            **One-Click Deployment:**
+            ```bash
+            # Deploy to Railway
+            curl -sSL https://railway.app/button.svg | bash -s -- https://github.com/${{ github.repository }}
+
+            # Deploy to Render
+            curl -sSL https://render.com/deploy/button.svg | bash -s -- https://github.com/${{ github.repository }}
+
+            # Deploy to Fly.io
+            flyctl launch --from https://github.com/${{ github.repository }}
+            ```
+
+            **Verification:**
+            ```bash
+            # Download and verify checksums
             curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt
             curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt.sig
 
             # Verify checksums signature
             cosign verify-blob --signature checksums.txt.sig checksums.txt
+
+            # Verify binary signatures
+            cosign verify-blob --signature gitguard-linux-amd64.sig gitguard-linux-amd64
             ```
 
             ### 🔒 Security & Supply Chain

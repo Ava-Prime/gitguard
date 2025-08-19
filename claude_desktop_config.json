@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gitguard-policy-explainer": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp.servers.gitguard_policy"
+      ],
+      "env": {
+        "GITGUARD_REPO_PATH": ".",
+        "GITGUARD_POLICIES_DIR": "./policies",
+        "GITGUARD_API_BASE_URL": "http://localhost:8000"
+      }
+    }
+  },
+  "globalShortcut": "CommandOrControl+Shift+G",
+  "description": "GitGuard Policy Explanation MCP Server - Provides policy rule retrieval and visualization for enhanced developer experience"
+}

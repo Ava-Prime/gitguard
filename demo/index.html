@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitGuard Demo - Try It Now</title>
+    <meta name="description" content="Experience GitGuard's autonomous repository stewardship in action. No installation required.">
+    <link rel="icon" type="image/svg+xml" href="../docs/images/social-preview.svg">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://codessa-platform.github.io/gitguard/demo/">
+    <meta property="og:title" content="GitGuard Demo - Try It Now">
+    <meta property="og:description" content="Experience GitGuard's autonomous repository stewardship in action. No installation required.">
+    <meta property="og:image" content="https://codessa-platform.github.io/gitguard/docs/images/social-preview.svg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://codessa-platform.github.io/gitguard/demo/">
+    <meta property="twitter:title" content="GitGuard Demo - Try It Now">
+    <meta property="twitter:description" content="Experience GitGuard's autonomous repository stewardship in action. No installation required.">
+    <meta property="twitter:image" content="https://codessa-platform.github.io/gitguard/docs/images/social-preview.svg">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .demo-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .demo-description {
+            color: #4a5568;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .demo-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .demo-button.secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .demo-button.secondary:hover {
+            background: #edf2f7;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .quick-start {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .quick-start h2 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .deployment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .deployment-option {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .deployment-option:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .deployment-option h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .deployment-option p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #2d3748;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-live {
+            background: rgba(72, 187, 120, 0.2);
+            color: #48bb78;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .status-coming-soon {
+            background: rgba(237, 137, 54, 0.2);
+            color: #ed8936;
+            border: 1px solid rgba(237, 137, 54, 0.3);
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 4rem;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="logo">🛡️ GitGuard</div>
+            <div class="tagline">The Autonomous Repository Steward</div>
+            <p>Experience intelligent policy enforcement and automated governance in action</p>
+        </div>
+
+        <div class="demo-grid">
+            <div class="demo-card">
+                <span class="status-indicator status-live">
+                    <span class="pulse"></span>
+                    Live Demo
+                </span>
+                <div class="demo-icon">🚀</div>
+                <h3 class="demo-title">Interactive Playground</h3>
+                <p class="demo-description">
+                    Explore GitGuard's full interface with sample repositories, policies, and real-time monitoring.
+                    No setup required - jump right in!
+                </p>
+                <button class="demo-button" onclick="launchDemo('playground')">
+                    🎮 Launch Playground
+                </button>
+            </div>
+
+            <div class="demo-card">
+                <span class="status-indicator status-live">
+                    <span class="pulse"></span>
+                    Live Demo
+                </span>
+                <div class="demo-icon">📊</div>
+                <h3 class="demo-title">Policy Dashboard</h3>
+                <p class="demo-description">
+                    See how GitGuard evaluates policies in real-time. Watch automated decisions,
+                    approval workflows, and compliance monitoring.
+                </p>
+                <button class="demo-button" onclick="launchDemo('dashboard')">
+                    📈 View Dashboard
+                </button>
+            </div>
+
+            <div class="demo-card">
+                <span class="status-indicator status-live">
+                    <span class="pulse"></span>
+                    Live Demo
+                </span>
+                <div class="demo-icon">🔍</div>
+                <h3 class="demo-title">API Explorer</h3>
+                <p class="demo-description">
+                    Test GitGuard's REST API with interactive documentation.
+                    Try endpoints, see responses, and understand the integration.
+                </p>
+                <button class="demo-button" onclick="launchDemo('api')">
+                    🔗 Explore API
+                </button>
+            </div>
+
+            <div class="demo-card">
+                <span class="status-indicator status-coming-soon">
+                    <span class="pulse"></span>
+                    Coming Soon
+                </span>
+                <div class="demo-icon">🎯</div>
+                <h3 class="demo-title">GitHub Integration</h3>
+                <p class="demo-description">
+                    Connect your GitHub repository and see GitGuard in action with real pull requests
+                    and policy evaluations.
+                </p>
+                <button class="demo-button secondary" disabled>
+                    🔗 Connect GitHub
+                </button>
+            </div>
+        </div>
+
+        <div class="quick-start">
+            <h2>🚀 Quick Start Options</h2>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 2rem;">
+                Choose your preferred way to run GitGuard locally
+            </p>
+
+            <div class="deployment-options">
+                <div class="deployment-option">
+                    <h3>🐳 Docker</h3>
+                    <p>One-command deployment with Docker Compose</p>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyToClipboard('docker-cmd')">Copy</button>
+                        <code id="docker-cmd">curl -fsSL https://raw.githubusercontent.com/codessa-platform/gitguard/main/scripts/quick-deploy.sh | bash</code>
+                    </div>
+                </div>
+
+                <div class="deployment-option">
+                    <h3>☁️ Cloud Deploy</h3>
+                    <p>Deploy to Railway, Render, or Fly.io</p>
+                    <button class="demo-button" onclick="showCloudOptions()">
+                        ☁️ Choose Platform
+                    </button>
+                </div>
+
+                <div class="deployment-option">
+                    <h3>💻 Local Install</h3>
+                    <p>Install from source or binary</p>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyToClipboard('local-cmd')">Copy</button>
+                        <code id="local-cmd">pip install gitguard && gitguard serve</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🤖</span>
+                <h3>Autonomous Governance</h3>
+                <p>Intelligent policy enforcement that learns and adapts to your team's workflow patterns.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <h3>Real-time Decisions</h3>
+                <p>Instant policy evaluation on pull requests with detailed reasoning and recommendations.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">📊</span>
+                <h3>Rich Analytics</h3>
+                <p>Comprehensive insights into deployment patterns, policy effectiveness, and team productivity.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🔒</span>
+                <h3>Security First</h3>
+                <p>Built-in security scanning, compliance checking, and risk assessment for every change.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🔧</span>
+                <h3>Easy Integration</h3>
+                <p>Seamless GitHub integration with webhook support and comprehensive API access.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">📈</span>
+                <h3>Scalable Architecture</h3>
+                <p>Enterprise-ready with Temporal workflows, Redis caching, and horizontal scaling support.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                Built with ❤️ by the <a href="https://github.com/codessa-platform">Codessa Platform</a> team
+                • <a href="https://github.com/codessa-platform/gitguard">View on GitHub</a>
+                • <a href="https://codessa-platform.github.io/gitguard/">Documentation</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Demo Modal -->
+    <div id="demoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 16px; padding: 2rem; max-width: 500px; margin: 2rem; text-align: center;">
+            <h3 style="margin-bottom: 1rem; color: #2d3748;">🚀 Launching Demo Environment</h3>
+            <p style="color: #4a5568; margin-bottom: 2rem;">Setting up your GitGuard demo instance...</p>
+            <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s ease;"></div>
+            </div>
+            <p id="statusText" style="margin-top: 1rem; color: #4a5568; font-size: 0.9rem;">Initializing...</p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const button = element.parentElement.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = '#48bb78';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#4a5568';
+                }, 2000);
+            });
+        }
+
+        function launchDemo(type) {
+            const modal = document.getElementById('demoModal');
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
+
+            modal.style.display = 'flex';
+
+            const steps = [
+                { progress: 20, text: 'Spinning up containers...' },
+                { progress: 40, text: 'Initializing database...' },
+                { progress: 60, text: 'Loading demo data...' },
+                { progress: 80, text: 'Starting services...' },
+                { progress: 100, text: 'Ready! Redirecting...' }
+            ];
+
+            let currentStep = 0;
+
+            const updateProgress = () => {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    progressBar.style.width = step.progress + '%';
+                    statusText.textContent = step.text;
+                    currentStep++;
+
+                    setTimeout(updateProgress, 1000);
+                } else {
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+
+                        // In a real implementation, this would redirect to the actual demo
+                        const demoUrls = {
+                            playground: 'https://demo.gitguard.dev/playground',
+                            dashboard: 'https://demo.gitguard.dev/dashboard',
+                            api: 'https://demo.gitguard.dev/docs'
+                        };
+
+                        // For now, show an alert (replace with actual demo URL)
+                        alert(`Demo would launch at: ${demoUrls[type] || 'https://demo.gitguard.dev'}\n\nNote: This is a preview. The actual demo environment is being prepared.`);
+                    }, 1000);
+                }
+            };
+
+            updateProgress();
+        }
+
+        function showCloudOptions() {
+            const options = [
+                { name: 'Railway', url: 'https://railway.app/template/gitguard' },
+                { name: 'Render', url: 'https://render.com/deploy?repo=https://github.com/codessa-platform/gitguard' },
+                { name: 'Fly.io', url: 'https://fly.io/apps/new?template=https://github.com/codessa-platform/gitguard' }
+            ];
+
+            const choice = prompt(
+                'Choose your cloud platform:\n\n' +
+                options.map((opt, i) => `${i + 1}. ${opt.name}`).join('\n') +
+                '\n\nEnter 1, 2, or 3:'
+            );
+
+            const index = parseInt(choice) - 1;
+            if (index >= 0 && index < options.length) {
+                window.open(options[index].url, '_blank');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('demoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'demoModal') {
+                e.target.style.display = 'none';
+            }
+        });
+
+        // Add some interactive animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.demo-card');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

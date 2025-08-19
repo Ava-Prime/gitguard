@@ -1,0 +1,105 @@
+# Site settings
+title: GitGuard Documentation
+description: Intelligent Policy Engine for GitHub - Automated policy enforcement, risk assessment, and decision transparency
+baseurl: ""
+url: "https://docs.gitguard.dev"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+header_pages:
+  - getting-started.md
+  - api.md
+  - policies.md
+  - examples.md
+  - architecture.md
+  - troubleshooting.md
+
+# Social links
+github_username: your-org
+twitter_username: gitguard_dev
+
+# SEO
+author:
+  name: GitGuard Team
+  email: team@gitguard.dev
+
+social:
+  name: GitGuard
+  links:
+    - https://github.com/your-org/gitguard
+    - https://twitter.com/gitguard_dev
+
+# Analytics
+google_analytics: G-XXXXXXXXXX
+
+# Custom CSS
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Collections
+collections:
+  examples:
+    output: true
+    permalink: /:collection/:name/
+  policies:
+    output: true
+    permalink: /:collection/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "GitGuard Team"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"
+  - scope:
+      path: ""
+      type: "examples"
+    values:
+      layout: "example"
+  - scope:
+      path: ""
+      type: "policies"
+    values:
+      layout: "policy"
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
+
+# Include files
+include:
+  - _pages
+
+# Kramdown settings
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true

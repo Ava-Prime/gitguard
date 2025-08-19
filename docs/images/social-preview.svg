@@ -1,0 +1,124 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.05" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Floating particles -->
+  <g opacity="0.3">
+    <circle cx="100" cy="100" r="2" fill="#3b82f6" filter="url(#glow)"/>
+    <circle cx="1100" cy="150" r="1.5" fill="#10b981" filter="url(#glow)"/>
+    <circle cx="200" cy="500" r="1" fill="#8b5cf6" filter="url(#glow)"/>
+    <circle cx="1000" cy="450" r="2.5" fill="#f59e0b" filter="url(#glow)"/>
+    <circle cx="150" cy="300" r="1.5" fill="#ef4444" filter="url(#glow)"/>
+    <circle cx="1050" cy="300" r="1" fill="#06b6d4" filter="url(#glow)"/>
+  </g>
+
+  <!-- Main content card -->
+  <rect x="100" y="100" width="1000" height="430" rx="20" fill="url(#cardGradient)" stroke="#ffffff" stroke-width="1" stroke-opacity="0.2" filter="url(#shadow)"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(150, 150)">
+    <rect x="0" y="0" width="80" height="80" rx="16" fill="#3b82f6" filter="url(#glow)"/>
+    <path d="M40 10L65 20L40 30L15 20Z" fill="#ffffff"/>
+    <path d="M15 25L40 35L65 25" fill="#ffffff" opacity="0.8"/>
+    <path d="M15 30L40 40L65 30" fill="#ffffff" opacity="0.6"/>
+    <path d="M15 35L40 45L65 35" fill="#ffffff" opacity="0.4"/>
+    <path d="M15 40L40 50L65 40" fill="#ffffff" opacity="0.2"/>
+    <circle cx="40" cy="55" r="8" fill="#ffffff" opacity="0.9"/>
+    <path d="M35 55L38 58L45 51" stroke="#3b82f6" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Title -->
+  <text x="270" y="190" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="48" font-weight="800" fill="#ffffff">GitGuard</text>
+  <text x="270" y="230" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="400" fill="#94a3b8">Autonomous Repository Steward</text>
+
+  <!-- Subtitle -->
+  <text x="270" y="270" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="500" fill="#e2e8f0">Policy-driven governance with full transparency</text>
+
+  <!-- Key features -->
+  <g transform="translate(270, 310)">
+    <g>
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#e2e8f0">Zero-config security with intelligent policies</text>
+    </g>
+    <g transform="translate(0, 35)">
+      <circle cx="8" cy="8" r="4" fill="#8b5cf6"/>
+      <text x="20" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#e2e8f0">Org-brain intelligence for dynamic ownership</text>
+    </g>
+    <g transform="translate(0, 70)">
+      <circle cx="8" cy="8" r="4" fill="#f59e0b"/>
+      <text x="20" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#e2e8f0">Temporal workflows with bulletproof reliability</text>
+    </g>
+    <g transform="translate(0, 105)">
+      <circle cx="8" cy="8" r="4" fill="#06b6d4"/>
+      <text x="20" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#e2e8f0">Complete transparency with decision receipts</text>
+    </g>
+  </g>
+
+  <!-- CTA Section -->
+  <g transform="translate(750, 300)">
+    <rect x="0" y="0" width="300" height="120" rx="12" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+
+    <text x="150" y="25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#ffffff" text-anchor="middle">🚀 Get Started in 60 Seconds</text>
+
+    <!-- GitHub App button -->
+    <rect x="20" y="40" width="120" height="30" rx="6" fill="#238636"/>
+    <text x="80" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">GitHub App</text>
+
+    <!-- Demo button -->
+    <rect x="160" y="40" width="120" height="30" rx="6" fill="#0969da"/>
+    <text x="220" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">Try Demo</text>
+
+    <text x="150" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#9ca3af" text-anchor="middle">No local setup required</text>
+    <text x="150" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#9ca3af" text-anchor="middle">Deploy with 2 clicks</text>
+  </g>
+
+  <!-- Stats/badges -->
+  <g transform="translate(150, 450)">
+    <!-- Version badge -->
+    <rect x="0" y="0" width="80" height="24" rx="12" fill="#374151"/>
+    <text x="40" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">v0.1.0</text>
+
+    <!-- License badge -->
+    <rect x="90" y="0" width="60" height="24" rx="12" fill="#0969da"/>
+    <text x="120" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">MIT</text>
+
+    <!-- Language badge -->
+    <rect x="160" y="0" width="80" height="24" rx="12" fill="#f1e05a"/>
+    <text x="200" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#000000" text-anchor="middle">Python</text>
+
+    <!-- Docker badge -->
+    <rect x="250" y="0" width="80" height="24" rx="12" fill="#2496ed"/>
+    <text x="290" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Docker</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="600" y="580" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">github.com/your-org/gitguard</text>
+
+  <!-- Decorative elements -->
+  <g opacity="0.1">
+    <path d="M0 0L200 100L0 200" fill="#3b82f6"/>
+    <path d="M1200 630L1000 530L1200 430" fill="#10b981"/>
+  </g>
+</svg>

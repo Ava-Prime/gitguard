@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Python dependencies
+  # Python dependencies - Root
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -11,8 +11,90 @@ updates:
     open-pull-requests-limit: 10
     reviewers:
       - "platform-team"
+    assignees:
+      - "security-team"
+    labels:
+      - "📦 dependencies"
+      - "🔒 security"
+      - "🐍 python"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    groups:
+      fastapi:
+        patterns:
+          - "fastapi*"
+          - "uvicorn*"
+          - "starlette*"
+      testing:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+          - "mock*"
+      linting:
+        patterns:
+          - "ruff*"
+          - "black*"
+          - "isort*"
+          - "mypy*"
+
+  # Python dependencies - Guard API
+  - package-ecosystem: "pip"
+    directory: "/apps/guard-api"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "08:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🔌 api"
+      - "🐍 python"
+    commit-message:
+      prefix: "api-deps"
+
+  # Python dependencies - Guard Codex
+  - package-ecosystem: "pip"
+    directory: "/apps/guard-codex"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "08:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "📚 codex"
+      - "🐍 python"
+    commit-message:
+      prefix: "codex-deps"
+
+  # Python dependencies - MCP
+  - package-ecosystem: "pip"
+    directory: "/mcp"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "08:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🤖 mcp"
+      - "🐍 python"
+    commit-message:
+      prefix: "mcp-deps"
 
   # Docker dependencies
   - package-ecosystem: "docker"
@@ -20,12 +102,52 @@ updates:
     schedule:
       interval: "weekly"
       day: "tuesday"
-      time: "08:00"
+      time: "09:00"
       timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 5
     reviewers:
       - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🐳 docker"
     commit-message:
-      prefix: "chore(docker)"
+      prefix: "docker"
+
+  # Docker - Guard API
+  - package-ecosystem: "docker"
+    directory: "/apps/guard-api"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "10:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🐳 docker"
+      - "🔌 api"
+    commit-message:
+      prefix: "api-docker"
+
+  # Docker - Guard Codex
+  - package-ecosystem: "docker"
+    directory: "/apps/guard-codex"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "11:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🐳 docker"
+      - "📚 codex"
+    commit-message:
+      prefix: "codex-docker"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -33,9 +155,37 @@ updates:
     schedule:
       interval: "weekly"
       day: "tuesday"
-      time: "08:00"
+      time: "12:00"
       timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 5
     reviewers:
       - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "🚀 ci-cd"
     commit-message:
-      prefix: "chore(actions)"
+      prefix: "ci"
+    groups:
+      actions:
+        patterns:
+          - "actions/*"
+      setup:
+        patterns:
+          - "*setup*"
+
+  # Bundler - Documentation
+  - package-ecosystem: "bundler"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "Africa/Johannesburg"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "platform-team"
+    labels:
+      - "📦 dependencies"
+      - "📚 documentation"
+    commit-message:
+      prefix: "docs-deps"

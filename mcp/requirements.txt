@@ -1,0 +1,4 @@
+# MCP Server Dependencies for GitGuard Policy Explanation
+mcp>=1.0.0
+typing-extensions>=4.0.0
+pathlib2>=2.3.0; python_version < '3.4'
