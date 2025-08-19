@@ -1,0 +1,93 @@
+name: 📚 Good First Issue - Documentation
+description: Improve documentation to help users and contributors
+title: "[Docs] "
+labels: ["good first issue", "documentation", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 👋 Welcome to GitGuard!
+
+        This is a **good first issue** - perfect for new contributors! We've marked it as beginner-friendly because it:
+        - Has clear requirements and scope
+        - Doesn't require deep knowledge of the codebase
+        - Provides good learning opportunities
+        - Has maintainer support available
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 What needs to be documented?
+      description: Describe what documentation is missing or needs improvement
+      placeholder: |
+        Example: Add a troubleshooting guide for common Docker setup issues
+
+        Current state: Users report confusion about port conflicts
+        Desired outcome: Clear step-by-step troubleshooting guide
+      value: |
+        <!-- Describe the documentation gap or improvement needed -->
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What does "done" look like for this issue?
+      placeholder: |
+        - [ ] Create new troubleshooting section in GETTING_STARTED.md
+        - [ ] Include at least 3 common issues with solutions
+        - [ ] Add screenshots or code examples where helpful
+        - [ ] Test instructions with a fresh setup
+      value: |
+        - [ ] <!-- Add specific, testable criteria -->
+
+    validations:
+      required: true
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: 📖 Documentation Type
+      description: What type of documentation work is this?
+      options:
+        - User Guide / Tutorial
+        - API Documentation
+        - Troubleshooting / FAQ
+        - Architecture / Design
+        - Contributing Guidelines
+        - Installation / Setup
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: 🔗 Helpful Resources
+      description: Links, examples, or context that might help
+      placeholder: |
+        - Related GitHub issues: #123
+        - Existing docs to reference: docs/ARCHITECTURE.md
+        - Similar examples: https://example.com/good-docs
+      value: |
+        <!-- Add any helpful links, examples, or context -->
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Getting Started
+
+        1. **Comment below** to claim this issue (we'll assign it to you)
+        2. **Fork the repository** and create a new branch
+        3. **Read our [Contributing Guide](../../CONTRIBUTING.md)** for setup instructions
+        4. **Ask questions** in the comments - we're here to help!
+
+        **Estimated time:** 1-3 hours
+        **Skills needed:** Writing, Markdown, basic Git
+
+        ---
+
+        💡 **New to open source?** This is a great place to start! We provide mentorship and detailed feedback to help you succeed.

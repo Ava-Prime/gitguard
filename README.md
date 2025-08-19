@@ -3,6 +3,22 @@
 
 GitGuard is an intelligent Git workflow automation platform that enforces quality, prevents incidents, and accelerates delivery through AI-powered code review and autonomous repository management. It features an organizational knowledge system ("org-brain") that provides judgment with receipts - every decision shows its source code and reasoning with full transparency and traceability.
 
+## Visual Overview
+
+<div align="center">
+
+### Policy Transparency with Source Code
+*See exact OPA rules and inputs that made decisions*
+
+![Policy Receipt Example](docs/images/policy-receipt-example.svg)
+
+### Real-time Governance Dashboard
+*Visual merge rates vs. block reasons with SLO monitoring*
+
+![Grafana Dashboard Example](docs/images/grafana-dashboard-example.svg)
+
+</div>
+
 ## Quickstart
 
 ```bash
@@ -39,6 +55,8 @@ make demo-customer  # 10-min flow: comprehensive governance demo
 
 ## Documentation
 
+📖 **[Live Documentation Portal](https://your-org.github.io/gitguard)** - Complete documentation with policies and guides
+
 - [🚀 Getting Started Guide](GETTING_STARTED.md) - Complete user onboarding
 - [🏗️ Architecture Overview](ARCHITECTURE.md) - System design and data flows
 - [👩‍💻 Developer Guide](DEVELOPER_GUIDE.md) - Local setup and development
@@ -48,7 +66,7 @@ make demo-customer  # 10-min flow: comprehensive governance demo
 - [🔐 Secrets Hygiene](docs/SECRETS_HYGIENE.md) - Automated secrets redaction and scanning
 - [📋 Operations Runbook](RUNBOOK.md) - Troubleshooting and done-done validation checklist
 - [🌪️ Chaos Engineering](tests/CHAOS_ENGINEERING.md) - Failure testing and resilience validation
-- [📚 Live Documentation Portal](http://localhost:8001) - Policies and PR digests (when running)
+- [📚 Local Documentation](http://localhost:8001) - Policies and PR digests (when running locally)
 - [🔌 API Reference](http://localhost:8000/docs) - Interactive API docs (when running)
 - [📊 Graph API](http://localhost:8000/graph/pr/{number}) - Read-only graph data endpoint
 

@@ -1,0 +1,127 @@
+name: 🚀 Good First Issue - Installation & Setup
+description: Improve installation experience and setup processes
+title: "[Install] "
+labels: ["good first issue", "installation", "developer-experience", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 👋 Welcome to GitGuard!
+
+        This is a **good first issue** - perfect for new contributors! We've marked it as beginner-friendly because it:
+        - Has clear requirements and scope
+        - Focuses on user experience improvements
+        - Provides good learning opportunities
+        - Has maintainer support available
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🛠️ What installation/setup issue needs fixing?
+      description: Describe the installation or setup problem
+      placeholder: |
+        Example: Add Windows-specific setup instructions
+
+        Current state: Setup guide only covers Linux/macOS
+        Desired outcome: Clear Windows setup guide with PowerShell commands
+      value: |
+        <!-- Describe the installation/setup gap or improvement needed -->
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What does "done" look like for this issue?
+      placeholder: |
+        - [ ] Add Windows section to GETTING_STARTED.md
+        - [ ] Include PowerShell equivalents for all bash commands
+        - [ ] Test setup process on Windows 10/11
+        - [ ] Add troubleshooting for common Windows issues
+        - [ ] Update Docker setup for Windows users
+      value: |
+        - [ ] <!-- Add specific, testable criteria -->
+
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 🖥️ Platform/Environment
+      description: Which platform or environment does this affect?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Docker
+        - Kubernetes/Helm
+        - CI/CD
+        - Cloud (AWS/GCP/Azure)
+        - All platforms
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: setup_type
+    attributes:
+      label: 🔧 Setup Type
+      description: What type of setup improvement is this?
+      options:
+        - Local Development
+        - Production Deployment
+        - Testing Environment
+        - Documentation
+        - Automation/Scripts
+        - Dependencies
+        - Configuration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: 🐛 Current Behavior
+      description: What happens now? Include error messages if applicable
+      placeholder: |
+        When I run `make setup` on Windows:
+        - Command not found: make
+        - Docker compose fails with permission errors
+        - Port 8080 conflicts with IIS
+      value: |
+        <!-- Describe what currently happens -->
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: 🔗 Helpful Resources
+      description: Links, examples, or context that might help
+      placeholder: |
+        - Related issues: #123
+        - Platform docs: https://docs.docker.com/desktop/windows/
+        - Similar projects: https://github.com/example/setup-guide
+      value: |
+        <!-- Add any helpful links, examples, or context -->
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Getting Started
+
+        1. **Comment below** to claim this issue (we'll assign it to you)
+        2. **Fork the repository** and create a new branch
+        3. **Read our [Contributing Guide](../../CONTRIBUTING.md)** for setup instructions
+        4. **Test your changes** on the target platform
+        5. **Ask questions** in the comments - we're here to help!
+
+        **Estimated time:** 2-4 hours
+        **Skills needed:** Platform knowledge, documentation, testing
+
+        ---
+
+        💡 **New to open source?** This is a great place to start! We provide mentorship and detailed feedback to help you succeed.

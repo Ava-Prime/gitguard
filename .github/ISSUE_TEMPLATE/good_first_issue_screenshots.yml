@@ -1,0 +1,137 @@
+name: 📸 Good First Issue - Screenshots & Visuals
+description: Add screenshots, diagrams, or visual improvements
+title: "[Screenshots] "
+labels: ["good first issue", "documentation", "visuals", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 👋 Welcome to GitGuard!
+
+        This is a **good first issue** - perfect for new contributors! We've marked it as beginner-friendly because it:
+        - Has clear visual requirements
+        - Doesn't require deep technical knowledge
+        - Helps improve user experience
+        - Has maintainer support available
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📷 What visuals are needed?
+      description: Describe what screenshots, diagrams, or visuals should be added
+      placeholder: |
+        Example: Add screenshots of the Grafana dashboard setup
+
+        Current state: Users struggle to configure dashboards without visual guidance
+        Desired outcome: Step-by-step screenshots showing dashboard import process
+      value: |
+        <!-- Describe what visuals are needed and why -->
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What does "done" look like for this issue?
+      placeholder: |
+        - [ ] Take screenshots of Grafana dashboard import process
+        - [ ] Add screenshots to docs/PROMETHEUS_ALERTS.md
+        - [ ] Include captions explaining each step
+        - [ ] Optimize images for web (< 500KB each)
+        - [ ] Test that images display correctly in GitHub
+      value: |
+        - [ ] <!-- Add specific, testable criteria -->
+
+    validations:
+      required: true
+
+  - type: dropdown
+    id: visual_type
+    attributes:
+      label: 🎨 Visual Type
+      description: What type of visual content is needed?
+      options:
+        - Screenshots (UI/Dashboard)
+        - Diagrams (Architecture/Flow)
+        - Code Examples (Syntax highlighted)
+        - GIFs/Animations (Workflows)
+        - Charts/Graphs (Data visualization)
+        - Icons/Logos (Branding)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: location
+    attributes:
+      label: 📍 Where should visuals be added?
+      description: Which documentation or location needs the visuals?
+      options:
+        - README.md
+        - Getting Started Guide
+        - Architecture Documentation
+        - API Documentation
+        - Troubleshooting Guide
+        - Contributing Guide
+        - GitHub Issues/PRs
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🎯 Context & Requirements
+      description: Any specific requirements for the visuals?
+      placeholder: |
+        - Image format: PNG or SVG preferred
+        - Max size: 500KB per image
+        - Style: Match existing documentation style
+        - Accessibility: Include alt text for all images
+        - Content: Show real data, not placeholder text
+      value: |
+        <!-- Add any specific requirements or constraints -->
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: 🔗 Helpful Resources
+      description: Links, examples, or tools that might help
+      placeholder: |
+        - Demo environment: http://localhost:3000
+        - Style guide: docs/STYLE_GUIDE.md
+        - Image optimization: https://tinypng.com
+        - Similar examples: https://github.com/example/good-screenshots
+      value: |
+        <!-- Add any helpful links, tools, or examples -->
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Getting Started
+
+        1. **Comment below** to claim this issue (we'll assign it to you)
+        2. **Fork the repository** and create a new branch
+        3. **Set up the local environment** following [GETTING_STARTED.md](../../GETTING_STARTED.md)
+        4. **Take screenshots** or create visuals as specified
+        5. **Optimize images** for web (use tools like TinyPNG)
+        6. **Add alt text** for accessibility
+        7. **Test display** in GitHub markdown preview
+
+        **Estimated time:** 1-2 hours
+        **Skills needed:** Basic image editing, attention to detail
+
+        ## 💡 Tips for Great Screenshots
+
+        - Use consistent browser/window sizes
+        - Hide personal information (usernames, emails)
+        - Use high contrast themes for better visibility
+        - Include relevant UI elements (buttons, menus)
+        - Show realistic data, not "lorem ipsum"
+
+        ---
+
+        💡 **New to open source?** This is a great place to start! We provide mentorship and detailed feedback to help you succeed.

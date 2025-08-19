@@ -47,6 +47,68 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
 
+      - name: Set up Docker Buildx
+        if: ${{ steps.release.outputs.release_created }}
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Log in to Container Registry
+        if: ${{ steps.release.outputs.release_created }}
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for release
+        if: ${{ steps.release.outputs.release_created }}
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.release.outputs.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.release.outputs.tag_name }}
+            type=semver,pattern={{major}},value=${{ steps.release.outputs.tag_name }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.release.outputs.tag_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.title=GitGuard
+            org.opencontainers.image.description=Policy-driven Git repository governance and compliance automation
+
+      - name: Build and push release container
+        if: ${{ steps.release.outputs.release_created }}
+        id: build
+        uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445 # v6.5.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate container SBOM
+        if: ${{ steps.release.outputs.release_created }}
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json
+
+      - name: Sign container image
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+
+      - name: Attest container SBOM
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          cosign attest --yes --predicate gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+
       - name: Generate SBOM
         if: ${{ steps.release.outputs.release_created }}
         run: |
@@ -115,30 +177,66 @@ jobs:
             gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
             gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json
             gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
+            gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json
             release-attestation.json
             release-attestation.json.sig
           body: |
             ## GitGuard ${{ steps.release.outputs.tag_name }}
 
+            ### 🚀 Quick Install
+
+            **Docker:**
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
+            docker run -p 8080:8080 ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
+            ```
+
+            **Helm:**
+            ```bash
+            helm repo add gitguard https://gitguard.github.io/helm-charts
+            helm install gitguard gitguard/gitguard --version ${{ steps.release.outputs.tag_name }}
+            ```
+
+            **Binary Download:**
+            ```bash
+            # Download checksums and verify
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt.sig
+
+            # Verify checksums signature
+            cosign verify-blob --signature checksums.txt.sig checksums.txt
+            ```
+
             ### 🔒 Security & Supply Chain
 
             This release includes comprehensive supply chain security artifacts:
 
-            - **SBOM (Software Bill of Materials)**: Complete inventory of dependencies
-              - SPDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json`
-              - CycloneDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json`
-              - Dependencies only: `gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json`
+            **Container Images:**
+            - Multi-arch support: `linux/amd64`, `linux/arm64`
+            - Signed with Cosign: `ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}`
+            - Container SBOM attached as attestation
 
-            - **Digital Signatures**: All artifacts are signed with Cosign
-              - Verify with: `cosign verify-blob --signature <file>.sig <file>`
+            **SBOM (Software Bill of Materials):**
+            - SPDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json`
+            - CycloneDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json`
+            - Dependencies only: `gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json`
+            - Container SBOM: `gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json`
 
-            - **Release Attestation**: Cryptographically signed build metadata
-              - Contains commit SHA, build timestamp, and security scan results
+            **Digital Signatures:** All artifacts are signed with Cosign
+            - Verify with: `cosign verify-blob --signature <file>.sig <file>`
+
+            **Release Attestation:** Cryptographically signed build metadata
+            - Contains commit SHA, build timestamp, and security scan results
 
             ### 📋 Verification
 
-            To verify this release:
+            **Verify Container Image:**
+            ```bash
+            cosign verify ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
+            cosign verify-attestation --type spdxjson ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
+            ```
 
+            **Verify SBOM:**
             ```bash
             # Download and verify SBOM
             curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
@@ -146,17 +244,6 @@ jobs:
 
             # Verify signature
             cosign verify-blob --signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
-            ```
-
-            ### 🚀 Installation
-
-            ```bash
-            # Docker
-            docker pull ghcr.io/gitguard/gitguard:${{ steps.release.outputs.tag_name }}
-
-            # Helm
-            helm repo add gitguard https://gitguard.github.io/helm-charts
-            helm install gitguard gitguard/gitguard --version ${{ steps.release.outputs.tag_name }}
             ```
 
             ---
