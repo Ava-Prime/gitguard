@@ -12,6 +12,24 @@
 [![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Security](https://img.shields.io/badge/security-first-green.svg)](https://github.com/codessa-platform/gitguard/security)
 
+<!-- Repository Activity Badges -->
+[![GitHub stars](https://img.shields.io/github/stars/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/stargazers)
+[![GitHub watchers](https://img.shields.io/github/watchers/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/watchers)
+[![GitHub forks](https://img.shields.io/github/forks/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/network/members)
+
+<!-- Release and Package Badges -->
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/codessa-platform/gitguard?sort=semver)](https://github.com/codessa-platform/gitguard/releases/latest)
+[![GitHub release date](https://img.shields.io/github/release-date/codessa-platform/gitguard)](https://github.com/codessa-platform/gitguard/releases)
+[![Docker Image Size](https://img.shields.io/docker/image-size/gitguard/gitguard/latest)](https://hub.docker.com/r/gitguard/gitguard)
+[![Docker Pulls](https://img.shields.io/docker/pulls/gitguard/gitguard)](https://hub.docker.com/r/gitguard/gitguard)
+[![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-gitguard-blue?logo=docker)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
+
+<!-- Build and Quality Badges -->
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/ci.yml?branch=main&label=CI%2FCD)](https://github.com/codessa-platform/gitguard/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/release.yml?label=Release)](https://github.com/codessa-platform/gitguard/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/codessa-platform/gitguard/branch/main/graph/badge.svg)](https://codecov.io/gh/codessa-platform/gitguard)
+[![Code Quality](https://img.shields.io/codefactor/grade/github/codessa-platform/gitguard/main)](https://www.codefactor.io/repository/github/codessa-platform/gitguard)
+
 ---
 
 ## 🌟 **Experience GitGuard Instantly - No Setup Required!**

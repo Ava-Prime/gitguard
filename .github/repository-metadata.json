@@ -1,7 +1,7 @@
 {
   "name": "GitGuard",
-  "description": "🛡️ Autonomous Repository Steward - Policy-driven governance with full transparency. Zero-config security, org-brain intelligence, and bulletproof workflow orchestration.",
-  "homepage": "https://your-org.github.io/gitguard",
+  "description": "🛡️ AI-powered repository governance that scales with your team. Zero-config security, org-brain intelligence, and transparent policy automation with full audit trails.",
+  "homepage": "https://codessa-platform.github.io/gitguard",
   "topics": [
     "git",
     "automation",
@@ -81,8 +81,8 @@
     }
   },
   "social_preview": {
-    "image_url": "https://raw.githubusercontent.com/your-org/gitguard/main/docs/images/social-preview.svg",
-    "alt_text": "GitGuard - Autonomous Repository Steward with policy-driven governance, org-brain intelligence, and full transparency"
+    "image_url": "https://raw.githubusercontent.com/codessa-platform/gitguard/main/docs/images/social-preview.svg",
+    "alt_text": "GitGuard - AI-powered repository governance with zero-config security, org-brain intelligence, and transparent policy automation"
   },
   "custom_properties": {
     "deployment_type": "github-app",
