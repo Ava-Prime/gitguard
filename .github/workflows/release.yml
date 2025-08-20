@@ -1,334 +1,67 @@
-name: Release
+name: release
 
 on:
   push:
     branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
-  packages: write
-  id-token: write
+  contents: write            # create tags/releases
+  pull-requests: write       # open/approve release PRs
+  packages: write            # push GHCR
+  id-token: write            # keyless cosign
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  release:
+  # Phase A: open/refresh the Release PR when commits hit main
+  release-please:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@e4dc86ba9405554aeba3c6bb2d169500e7d3b4ee # v4.1.1
-        id: release
-
-      - name: Checkout
-        if: ${{ steps.release.outputs.release_created }}
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Python
-        if: ${{ steps.release.outputs.release_created }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
-          python-version: '3.11'
+          command: manifest
 
-      - name: Install dependencies
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
-
-      - name: Build binaries
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          # Create binary builds for multiple platforms
-          mkdir -p dist/binaries
-
-          # Build Linux binary
-          pyinstaller --onefile --name gitguard-linux-amd64 --distpath dist/binaries apps/guard-api/main.py
-
-          # Build Windows binary (cross-compile)
-          pyinstaller --onefile --name gitguard-windows-amd64.exe --distpath dist/binaries apps/guard-api/main.py
-
-          # Create tarball for source distribution
-          tar -czf dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz \
-            --exclude='.git' \
-            --exclude='dist' \
-            --exclude='__pycache__' \
-            --exclude='*.pyc' \
-            .
-
-          # List generated binaries
-          ls -la dist/binaries/
-
-      - name: Generate checksums
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          cd dist/binaries
-          sha256sum * > checksums.txt
-          cat checksums.txt
-
-      - name: Install Syft for SBOM generation
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Install Cosign for signing
-        if: ${{ steps.release.outputs.release_created }}
-        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
+  # Phase B: after the PR is merged and the GitHub Release is published,
+  # build multi-arch image, sign, attest, and publish to GHCR.
+  build-publish:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
-        if: ${{ steps.release.outputs.release_created }}
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
-      - name: Log in to Container Registry
-        if: ${{ steps.release.outputs.release_created }}
+      - name: Log in to GHCR
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for release
-        if: ${{ steps.release.outputs.release_created }}
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+      - name: Build & push (multi-arch)
+        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}},value=${{ steps.release.outputs.tag_name }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.release.outputs.tag_name }}
-            type=semver,pattern={{major}},value=${{ steps.release.outputs.tag_name }}
-            type=raw,value=latest
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.version=${{ steps.release.outputs.tag_name }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
-            org.opencontainers.image.title=GitGuard
-            org.opencontainers.image.description=Policy-driven Git repository governance and compliance automation
-
-      - name: Build and push release container
-        if: ${{ steps.release.outputs.release_created }}
-        id: build
-        uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445 # v6.5.0
-        with:
-          context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+            ghcr.io/${{ github.repository_owner }}/gitguard:latest
+          provenance: true
+          sbom: true
 
-      - name: Generate container SBOM
-        if: ${{ steps.release.outputs.release_created }}
-        uses: anchore/sbom-action@v0
-        with:
-          image: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-          format: spdx-json
-          output-file: gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
 
-      - name: Sign container image
-        if: ${{ steps.release.outputs.release_created }}
+      - name: Cosign keyless sign & verify
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-
-      - name: Attest container SBOM
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          cosign attest --yes --predicate gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json --type spdxjson ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
-
-      - name: Generate SBOM
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          # Generate comprehensive SBOM for the release
-          syft . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json || echo "Failed to generate main SBOM"
-          syft . -o cyclonedx-json=gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json || echo "Failed to generate CycloneDX SBOM"
-
-          # Generate SBOM for Python dependencies
-          syft packages . -o spdx-json=gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json || echo "Failed to generate dependencies SBOM"
-
-          # List generated files for debugging
-          ls -la gitguard-${{ steps.release.outputs.tag_name }}-*.json || echo "No SBOM files generated"
-
-      - name: Sign SBOM files
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          # Sign SBOM files with Cosign (only if they exist)
-          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json" ]; then
-            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
-          fi
-
-          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json" ]; then
-            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
-          fi
-
-          if [ -f "gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json" ]; then
-            cosign sign-blob --yes gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json --output-signature gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
-          fi
-
-      - name: Sign binaries and checksums
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          # Sign checksums file
-          cosign sign-blob --yes dist/binaries/checksums.txt --output-signature dist/binaries/checksums.txt.sig
-
-          # Sign individual binaries
-          for binary in dist/binaries/gitguard-*; do
-            if [ -f "$binary" ] && [ "$binary" != "dist/binaries/checksums.txt" ]; then
-              cosign sign-blob --yes "$binary" --output-signature "$binary.sig"
-            fi
-          done
-
-      - name: Generate release attestation
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          # Create attestation metadata
-          cat > release-attestation.json << EOF
-          {
-            "version": "${{ steps.release.outputs.tag_name }}",
-            "release_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "commit_sha": "${{ github.sha }}",
-            "repository": "${{ github.repository }}",
-            "workflow_run_id": "${{ github.run_id }}",
-            "sbom_files": [
-              "gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json",
-              "gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json",
-              "gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json"
-            ],
-            "security_scans": {
-              "secrets_scan": "passed",
-              "vulnerability_scan": "passed",
-              "license_compliance": "passed"
-            }
-          }
-          EOF
-
-          # Sign the attestation
-          cosign sign-blob --yes release-attestation.json --output-signature release-attestation.json.sig
-
-      - name: Upload release assets
-        if: ${{ steps.release.outputs.release_created }}
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
-        with:
-          tag_name: ${{ steps.release.outputs.tag_name }}
-          files: |
-            gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
-            gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
-            gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json
-            gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json.sig
-            gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json
-            gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json.sig
-            gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json
-            release-attestation.json
-            release-attestation.json.sig
-            dist/binaries/gitguard-linux-amd64
-            dist/binaries/gitguard-linux-amd64.sig
-            dist/binaries/gitguard-windows-amd64.exe
-            dist/binaries/gitguard-windows-amd64.exe.sig
-            dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz
-            dist/binaries/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz.sig
-            dist/binaries/checksums.txt
-            dist/binaries/checksums.txt.sig
-          body: |
-            ## GitGuard ${{ steps.release.outputs.tag_name }}
-
-            ### 🚀 Quick Install
-
-            **Docker:**
-            ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
-            docker run -p 8080:8080 ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
-            ```
-
-            **Helm:**
-            ```bash
-            helm repo add gitguard https://gitguard.github.io/helm-charts
-            helm install gitguard gitguard/gitguard --version ${{ steps.release.outputs.tag_name }}
-            ```
-
-            **Binary Download:**
-            ```bash
-            # Linux (AMD64)
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-linux-amd64
-            chmod +x gitguard-linux-amd64
-            ./gitguard-linux-amd64 --version
-
-            # Windows (AMD64)
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-windows-amd64.exe
-
-            # Source Code
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-source.tar.gz
-            ```
-
-            **One-Click Deployment:**
-            ```bash
-            # Deploy to Railway
-            curl -sSL https://railway.app/button.svg | bash -s -- https://github.com/${{ github.repository }}
-
-            # Deploy to Render
-            curl -sSL https://render.com/deploy/button.svg | bash -s -- https://github.com/${{ github.repository }}
-
-            # Deploy to Fly.io
-            flyctl launch --from https://github.com/${{ github.repository }}
-            ```
-
-            **Verification:**
-            ```bash
-            # Download and verify checksums
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/checksums.txt.sig
-
-            # Verify checksums signature
-            cosign verify-blob --signature checksums.txt.sig checksums.txt
-
-            # Verify binary signatures
-            cosign verify-blob --signature gitguard-linux-amd64.sig gitguard-linux-amd64
-            ```
-
-            ### 🔒 Security & Supply Chain
-
-            This release includes comprehensive supply chain security artifacts:
-
-            **Container Images:**
-            - Multi-arch support: `linux/amd64`, `linux/arm64`
-            - Signed with Cosign: `ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}`
-            - Container SBOM attached as attestation
-
-            **SBOM (Software Bill of Materials):**
-            - SPDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json`
-            - CycloneDX format: `gitguard-${{ steps.release.outputs.tag_name }}-sbom.cyclonedx.json`
-            - Dependencies only: `gitguard-${{ steps.release.outputs.tag_name }}-deps-sbom.spdx.json`
-            - Container SBOM: `gitguard-${{ steps.release.outputs.tag_name }}-container-sbom.spdx.json`
-
-            **Digital Signatures:** All artifacts are signed with Cosign
-            - Verify with: `cosign verify-blob --signature <file>.sig <file>`
-
-            **Release Attestation:** Cryptographically signed build metadata
-            - Contains commit SHA, build timestamp, and security scan results
-
-            ### 📋 Verification
-
-            **Verify Container Image:**
-            ```bash
-            cosign verify ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
-            cosign verify-attestation --type spdxjson ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag_name }}
-            ```
-
-            **Verify SBOM:**
-            ```bash
-            # Download and verify SBOM
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag_name }}/gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig
-
-            # Verify signature
-            cosign verify-blob --signature gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json.sig gitguard-${{ steps.release.outputs.tag_name }}-sbom.spdx.json
-            ```
-
-            ---
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.release.outputs.previous_tag }}...${{ steps.release.outputs.tag_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cosign sign ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }} \
+            --yes
