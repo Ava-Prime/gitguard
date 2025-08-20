@@ -6,10 +6,10 @@ We actively support the following versions of GitGuard with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.1.x   | :white_check_mark: |
-| 2.0.x   | :white_check_mark: |
-| 1.9.x   | :x:                |
-| < 1.9   | :x:                |
+| 0.x.x   | :white_check_mark: |
+| < 0.1   | :x:                |
+
+**Note**: GitGuard is currently in early development (0.x versions). While we take security seriously, please be aware that APIs and security features may change between minor versions.
 
 ## Reporting a Vulnerability
 
@@ -18,9 +18,8 @@ We actively support the following versions of GitGuard with security updates:
 For security vulnerabilities, please contact our security team:
 
 - **Primary Contact**: security@gitguard.dev
-- **Backup Contact**: security-team@example.org
-- **PGP Key**: [Download Public Key](https://gitguard.dev/security/pgp-key.asc)
-- **Security Advisory**: [GitHub Security Advisories](https://github.com/gitguard/gitguard/security/advisories)
+- **GitHub Security**: [Security Advisories](https://github.com/Ava-Prime/gitguard/security/advisories)
+- **Issues**: For non-sensitive security issues, use [GitHub Issues](https://github.com/Ava-Prime/gitguard/issues) with the 'security' label
 
 ### Disclosure Process
 
@@ -30,32 +29,34 @@ For security vulnerabilities, please contact our security team:
    - Specify affected versions and components
    - Use PGP encryption for sensitive details
 
-2. **Acknowledgment**: We will acknowledge receipt within **24 hours**
+2. **Acknowledgment**: We will acknowledge receipt within **48 hours**
 
-3. **Initial Assessment**: Security team will provide initial assessment within **72 hours**
+3. **Initial Assessment**: We will provide initial assessment within **1 week**
    - Confirm vulnerability validity
    - Assign severity level (Critical, High, Medium, Low)
    - Provide estimated timeline for resolution
 
-4. **Investigation & Fix**: Development of security patch
-   - Critical: 7 days
-   - High: 14 days
-   - Medium: 30 days
-   - Low: 60 days
+4. **Investigation & Fix**: Development of security patch (best effort)
+   - Critical: 2 weeks
+   - High: 1 month
+   - Medium: 2 months
+   - Low: Next major release
 
 5. **Coordinated Disclosure**: Public disclosure after fix is available
    - Security advisory published
    - CVE assigned if applicable
    - Credit given to reporter (unless anonymity requested)
 
-### Service Level Agreement (SLA)
+### Response Targets (Best Effort)
 
 | Severity | Response Time | Resolution Target |
 |----------|---------------|-------------------|
-| Critical | 4 hours       | 7 days           |
-| High     | 24 hours      | 14 days          |
-| Medium   | 72 hours      | 30 days          |
-| Low      | 1 week        | 60 days          |
+| Critical | 48 hours      | 2 weeks          |
+| High     | 1 week        | 1 month          |
+| Medium   | 2 weeks       | 2 months         |
+| Low      | 1 month       | Next release     |
+
+**Note**: As an early-stage project, these are target timelines and not guaranteed SLAs.
 
 **Critical Vulnerabilities** include:
 - Remote code execution
@@ -152,4 +153,4 @@ For detailed security architecture information, see:
 
 **Last Updated**: December 2024
 **Next Review**: March 2025
-**Document Version**: 2.1.0
+**Document Version**: 0.1.0

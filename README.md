@@ -10,32 +10,32 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![Security](https://img.shields.io/badge/security-first-green.svg)](https://github.com/codessa-platform/gitguard/security)
+[![Security](https://img.shields.io/badge/security-first-green.svg)](https://github.com/Ava-Prime/gitguard/security)
 
 <!-- Repository Activity Badges -->
-[![GitHub stars](https://img.shields.io/github/stars/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/stargazers)
-[![GitHub watchers](https://img.shields.io/github/watchers/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/watchers)
-[![GitHub forks](https://img.shields.io/github/forks/codessa-platform/gitguard?style=social)](https://github.com/codessa-platform/gitguard/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/Ava-Prime/gitguard?style=social)](https://github.com/Ava-Prime/gitguard/stargazers)
+[![GitHub watchers](https://img.shields.io/github/watchers/Ava-Prime/gitguard?style=social)](https://github.com/Ava-Prime/gitguard/watchers)
+[![GitHub forks](https://img.shields.io/github/forks/Ava-Prime/gitguard?style=social)](https://github.com/Ava-Prime/gitguard/network/members)
 
 <!-- Release and Package Badges -->
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/codessa-platform/gitguard?sort=semver)](https://github.com/codessa-platform/gitguard/releases/latest)
-[![GitHub release date](https://img.shields.io/github/release-date/codessa-platform/gitguard)](https://github.com/codessa-platform/gitguard/releases)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Ava-Prime/gitguard?sort=semver)](https://github.com/Ava-Prime/gitguard/releases/latest)
+[![GitHub release date](https://img.shields.io/github/release-date/Ava-Prime/gitguard)](https://github.com/Ava-Prime/gitguard/releases)
 [![Docker Image Size](https://img.shields.io/docker/image-size/gitguard/gitguard/latest)](https://hub.docker.com/r/gitguard/gitguard)
 [![Docker Pulls](https://img.shields.io/docker/pulls/gitguard/gitguard)](https://hub.docker.com/r/gitguard/gitguard)
-[![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-gitguard-blue?logo=docker)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
+[![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-gitguard-blue?logo=docker)](https://github.com/Ava-Prime/gitguard/pkgs/container/gitguard)
 
 <!-- Build and Quality Badges -->
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/ci.yml?branch=main&label=CI%2FCD)](https://github.com/codessa-platform/gitguard/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/release.yml?label=Release)](https://github.com/codessa-platform/gitguard/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/codessa-platform/gitguard/branch/main/graph/badge.svg)](https://codecov.io/gh/codessa-platform/gitguard)
-[![Code Quality](https://img.shields.io/codefactor/grade/github/codessa-platform/gitguard/main)](https://www.codefactor.io/repository/github/codessa-platform/gitguard)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/Ava-Prime/gitguard/ci.yml?branch=main&label=CI%2FCD)](https://github.com/Ava-Prime/gitguard/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/Ava-Prime/gitguard/release.yml?label=Release)](https://github.com/Ava-Prime/gitguard/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/Ava-Prime/gitguard/branch/main/graph/badge.svg)](https://codecov.io/gh/Ava-Prime/gitguard)
+[![Code Quality](https://img.shields.io/codefactor/grade/github/Ava-Prime/gitguard/main)](https://www.codefactor.io/repository/github/Ava-Prime/gitguard)
 
 <!-- Observability and Security Badges -->
-[![Pages](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/docs.yml?label=Pages)](https://github.com/codessa-platform/gitguard/actions/workflows/docs.yml)
-[![GHCR](https://img.shields.io/badge/GHCR-Published-success?logo=docker)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
-[![SBOM](https://img.shields.io/badge/SBOM-Available-blue?logo=security)](https://github.com/codessa-platform/gitguard/attestations)
-[![Provenance](https://img.shields.io/badge/Provenance-Verified-green?logo=github)](https://github.com/codessa-platform/gitguard/attestations)
-[![Cosign](https://img.shields.io/badge/Cosign-Signed-purple?logo=sigstore)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
+[![Pages](https://img.shields.io/github/actions/workflow/status/Ava-Prime/gitguard/docs.yml?label=Pages)](https://github.com/Ava-Prime/gitguard/actions/workflows/docs.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-Published-success?logo=docker)](https://github.com/Ava-Prime/gitguard/pkgs/container/gitguard)
+[![SBOM](https://img.shields.io/badge/SBOM-Available-blue?logo=security)](https://github.com/Ava-Prime/gitguard/attestations)
+[![Provenance](https://img.shields.io/badge/Provenance-Verified-green?logo=github)](https://github.com/Ava-Prime/gitguard/attestations)
+[![Cosign](https://img.shields.io/badge/Cosign-Signed-purple?logo=sigstore)](https://github.com/Ava-Prime/gitguard/pkgs/container/gitguard)
 
 ---
 
@@ -46,7 +46,7 @@
 <td align="center" width="33%">
 
 ### 🌐 **Live Demo**
-[![Launch Demo](https://img.shields.io/badge/🚀_Launch_Demo-Live_Interactive-success?style=for-the-badge)](https://codessa-platform.github.io/gitguard/demo/)
+[![Launch Demo](https://img.shields.io/badge/🚀_Launch_Demo-Live_Interactive-success?style=for-the-badge)](https://ava-prime.github.io/gitguard/demo/)
 
 *Try GitGuard in your browser*
 *No installation needed*
@@ -64,7 +64,7 @@
 <td align="center" width="33%">
 
 ### 📦 **Quick Install**
-[![Download Binary](https://img.shields.io/badge/📥_Download-Binary_Release-orange?style=for-the-badge)](https://github.com/codessa-platform/gitguard/releases/latest)
+[![Download Binary](https://img.shields.io/badge/📥_Download-Binary_Release-orange?style=for-the-badge)](https://github.com/Ava-Prime/gitguard/releases/latest)
 
 *Pre-built for Linux, Windows, macOS*
 *Single executable, no dependencies*
@@ -111,41 +111,41 @@
 
 ### 🌐 Live Demo - No Installation Required!
 
-**👉 [Launch Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)** - Experience GitGuard in your browser right now!
+**👉 [Launch Interactive Demo](https://ava-prime.github.io/gitguard/demo/)** - Experience GitGuard in your browser right now!
 
 ### ⚡ One-Click Deployment
 
 #### Cloud Platforms
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/gitguard)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/codessa-platform/gitguard)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Ava-Prime/gitguard)
 
 #### Local Quick Start
 ```bash
 # Linux/macOS - One command deployment
-curl -fsSL https://raw.githubusercontent.com/codessa-platform/gitguard/main/scripts/quick-deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Ava-Prime/gitguard/main/scripts/quick-deploy.sh | bash
 
 # Windows PowerShell
-iwr -useb https://raw.githubusercontent.com/codessa-platform/gitguard/main/scripts/quick-deploy.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/Ava-Prime/gitguard/main/scripts/quick-deploy.ps1 | iex
 
 # Docker Compose
-git clone https://github.com/codessa-platform/gitguard.git
+git clone https://github.com/Ava-Prime/gitguard.git
 cd gitguard && docker-compose up -d
 ```
 
 ### 📦 Binary Installation
 
-Download pre-built binaries from our [releases page](https://github.com/codessa-platform/gitguard/releases):
+Download pre-built binaries from our [releases page](https://github.com/Ava-Prime/gitguard/releases):
 
 ```bash
 # Linux
-wget https://github.com/codessa-platform/gitguard/releases/latest/download/gitguard-linux
+wget https://github.com/Ava-Prime/gitguard/releases/latest/download/gitguard-linux
 chmod +x gitguard-linux && ./gitguard-linux serve --demo
 
 # Windows
 # Download gitguard-windows.exe and run: gitguard-windows.exe serve --demo
 
 # macOS
-wget https://github.com/codessa-platform/gitguard/releases/latest/download/gitguard-darwin
+wget https://github.com/Ava-Prime/gitguard/releases/latest/download/gitguard-darwin
 chmod +x gitguard-darwin && ./gitguard-darwin serve --demo
 ```
 
@@ -180,9 +180,9 @@ open http://localhost:8080  # GitGuard: Policy explorer, org-brain insights
 ## ✨ Features
 
 ### 🌟 **Try Before You Install**
-- **[Live Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)**: Experience GitGuard instantly in your browser ✅ **Available Now**
-  - 📊 [Demo Health Status](https://codessa-platform.github.io/gitguard/demo/health) - Verify demo availability
-  - 🎯 [Sample Policy Decisions](https://codessa-platform.github.io/gitguard/demo/examples) - See real evaluations
+- **[Live Interactive Demo](https://ava-prime.github.io/gitguard/demo/)**: Experience GitGuard instantly in your browser ✅ **Available Now**
+  - 📊 [Demo Health Status](https://ava-prime.github.io/gitguard/demo/health) - Verify demo availability
+  - 🎯 [Sample Policy Decisions](https://ava-prime.github.io/gitguard/demo/examples) - See real evaluations
 - **One-Click Deployment**: Deploy to Railway, Render, or Fly.io in seconds ✅ **Available Now**
 - **Quick Start Scripts**: Single command setup for Linux, macOS, and Windows ✅ **Available Now**
 - **Pre-built Binaries**: Download and run immediately, no dependencies ✅ **Available Now**
@@ -263,7 +263,7 @@ make demo-customer  # 10-min flow: comprehensive governance demo
 
 ## 📚 Comprehensive Documentation
 
-🌟 **[Live Documentation Portal](https://your-org.github.io/gitguard)** - Interactive guides with live examples
+🌟 **[Live Documentation Portal](https://ava-prime.github.io/gitguard)** - Interactive guides with live examples
 
 ### 📖 Core Guides
 - **[🚀 Getting Started Guide](GETTING_STARTED.md)** - Zero to protected in 60 seconds
@@ -366,7 +366,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines and [DEVELOPER_GU
 
 - 💬 [Discord Community](https://discord.gg/gitguard)
 - 📧 [Enterprise Support](mailto:enterprise@gitguard.io)
-- 🐛 [GitHub Issues](https://github.com/your-org/gitguard/issues)
+- 🐛 [GitHub Issues](https://github.com/Ava-Prime/gitguard/issues)
 
 ## License
 
