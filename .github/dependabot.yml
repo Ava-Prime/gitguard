@@ -14,9 +14,8 @@ updates:
     assignees:
       - "security-team"
     labels:
-      - "📦 dependencies"
-      - "🔒 security"
-      - "🐍 python"
+      - "dependencies"
+      - "python"
     commit-message:
       prefix: "deps"
       prefix-development: "deps-dev"
@@ -25,22 +24,32 @@ updates:
       - dependency-type: "direct"
       - dependency-type: "indirect"
     groups:
-      fastapi:
+      fastapi-stack:
         patterns:
           - "fastapi*"
           - "uvicorn*"
           - "starlette*"
+          - "httpx*"
+          - "pydantic*"
+        update-types: ["minor", "patch"]
+      observability:
+        patterns:
+          - "prometheus-client*"
+          - "structlog*"
+        update-types: ["minor", "patch"]
       testing:
         patterns:
           - "pytest*"
           - "coverage*"
           - "mock*"
+        update-types: ["minor", "patch"]
       linting:
         patterns:
           - "ruff*"
           - "black*"
           - "isort*"
           - "mypy*"
+        update-types: ["minor", "patch"]
 
   # Python dependencies - Guard API
   - package-ecosystem: "pip"
@@ -54,11 +63,24 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🔌 api"
-      - "🐍 python"
+      - "dependencies"
+      - "python"
+      - "api"
     commit-message:
       prefix: "api-deps"
+    groups:
+      fastapi-stack:
+        patterns:
+          - "fastapi*"
+          - "uvicorn*"
+          - "httpx*"
+          - "pydantic*"
+        update-types: ["minor", "patch"]
+      observability:
+        patterns:
+          - "prometheus-client*"
+          - "structlog*"
+        update-types: ["minor", "patch"]
 
   # Python dependencies - Guard Codex
   - package-ecosystem: "pip"
@@ -72,9 +94,8 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "📚 codex"
-      - "🐍 python"
+      - "dependencies"
+      - "python"
     commit-message:
       prefix: "codex-deps"
 
@@ -90,9 +111,8 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🤖 mcp"
-      - "🐍 python"
+      - "dependencies"
+      - "python"
     commit-message:
       prefix: "mcp-deps"
 
@@ -108,8 +128,8 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🐳 docker"
+      - "dependencies"
+      - "docker"
     commit-message:
       prefix: "docker"
 
@@ -125,11 +145,16 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🐳 docker"
-      - "🔌 api"
+      - "dependencies"
+      - "docker"
+      - "api"
     commit-message:
       prefix: "api-docker"
+    groups:
+      python-runtime:
+        patterns:
+          - "python"
+        update-types: ["minor", "patch"]
 
   # Docker - Guard Codex
   - package-ecosystem: "docker"
@@ -143,11 +168,15 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🐳 docker"
-      - "📚 codex"
+      - "dependencies"
+      - "docker"
     commit-message:
       prefix: "codex-docker"
+    groups:
+      python-runtime:
+        patterns:
+          - "python"
+        update-types: ["minor", "patch"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -161,17 +190,22 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "🚀 ci-cd"
+      - "dependencies"
+      - "github_actions"
     commit-message:
       prefix: "ci"
     groups:
-      actions:
+      actions-core:
         patterns:
           - "actions/*"
-      setup:
+          - "docker/*"
+          - "anchore/*"
+          - "streetsidesoftware/*"
+        update-types: ["minor", "patch"]
+      setup-tools:
         patterns:
           - "*setup*"
+        update-types: ["minor", "patch"]
 
   # Bundler - Documentation
   - package-ecosystem: "bundler"
@@ -185,7 +219,6 @@ updates:
     reviewers:
       - "platform-team"
     labels:
-      - "📦 dependencies"
-      - "📚 documentation"
+      - "dependencies"
     commit-message:
       prefix: "docs-deps"
