@@ -48,7 +48,84 @@ Once billing is fixed, test the release workflow:
 ```bash
 # Trigger release workflow manually
 gh workflow run release.yml
+```
 
+## 🚑 Hotfix & Rollback Playbook
+
+### Hotfix Procedure
+
+For critical bugs that need immediate patching:
+
+```powershell
+# 1. Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-security-fix
+
+# 2. Make the fix and commit with conventional commit
+git add .
+git commit -m "fix: resolve critical security vulnerability in auth module"
+
+# 3. Push and create PR
+git push origin hotfix/critical-security-fix
+gh pr create --title "hotfix: critical security fix" --body "Urgent security patch"
+
+# 4. Merge PR - Release-Please will automatically:
+#    - Detect the fix: commit
+#    - Bump patch version (e.g., 0.1.0 → 0.1.1)
+#    - Open release PR
+#    - After merge → Phase B publishes new image
+```
+
+### Rollback Procedure
+
+**Never delete tags in production.** Instead, publish a superseding patch:
+
+```powershell
+# 1. Identify the problematic release merge commit
+git log --oneline --merges
+
+# 2. Revert the release merge (use -m 1 for main branch)
+git revert -m 1 <merge_commit_of_release_pr>
+
+# 3. Commit the revert
+git commit -m "fix: revert problematic release v0.1.1"
+
+# 4. Push to main
+git push origin main
+
+# 5. Release-Please will open corrective PR for next patch version
+# This creates a new release (e.g., v0.1.2) that supersedes the broken one
+```
+
+### Emergency Override Process
+
+For critical production issues requiring immediate bypass:
+
+1. **Add emergency label**: `emergency-override` to PR
+2. **Provide justification**: Clear explanation in PR description
+3. **Post-incident review**: Schedule within 24 hours
+4. **Audit trail**: All emergency overrides logged and reviewed
+
+### Verification Commands
+
+After any hotfix or rollback:
+
+```powershell
+# Verify the new image is published and signed
+$TAG = "0.1.2"  # Replace with actual version
+$IMAGE = "ghcr.io/codessa-platform/gitguard:$TAG"
+
+# Pull and verify
+docker pull $IMAGE
+cosign verify `
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" `
+  --certificate-identity-regexp "github.com/codessa-platform/gitguard/.github/workflows/release.*" `
+  $IMAGE
+
+# Check release notes
+gh release view $TAG
+```
 # Check workflow status
 gh run list --workflow release.yml
 

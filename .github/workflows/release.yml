@@ -14,8 +14,8 @@ permissions:
   id-token: write            # keyless cosign
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   # Phase A: open/refresh the Release PR when commits hit main

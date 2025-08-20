@@ -30,6 +30,13 @@
 [![codecov](https://codecov.io/gh/codessa-platform/gitguard/branch/main/graph/badge.svg)](https://codecov.io/gh/codessa-platform/gitguard)
 [![Code Quality](https://img.shields.io/codefactor/grade/github/codessa-platform/gitguard/main)](https://www.codefactor.io/repository/github/codessa-platform/gitguard)
 
+<!-- Observability and Security Badges -->
+[![Pages](https://img.shields.io/github/actions/workflow/status/codessa-platform/gitguard/docs.yml?label=Pages)](https://github.com/codessa-platform/gitguard/actions/workflows/docs.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-Published-success?logo=docker)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
+[![SBOM](https://img.shields.io/badge/SBOM-Available-blue?logo=security)](https://github.com/codessa-platform/gitguard/attestations)
+[![Provenance](https://img.shields.io/badge/Provenance-Verified-green?logo=github)](https://github.com/codessa-platform/gitguard/attestations)
+[![Cosign](https://img.shields.io/badge/Cosign-Signed-purple?logo=sigstore)](https://github.com/codessa-platform/gitguard/pkgs/container/gitguard)
+
 ---
 
 ## 🌟 **Experience GitGuard Instantly - No Setup Required!**
