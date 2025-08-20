@@ -1,181 +1,77 @@
 version: 2
 updates:
-  # Python dependencies - Root
+  # Python deps for Guard API
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/apps/guard-api"
     schedule:
       interval: "weekly"
-      day: "tuesday"
-      time: "08:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "platform-team"
-    assignees:
-      - "security-team"
-    labels:
-      - "dependencies"
-      - "python"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "python", "api"]
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
+      prefix: "build(deps)"
       include: "scope"
-    allow:
-      - dependency-type: "direct"
-      - dependency-type: "indirect"
     groups:
       fastapi-stack:
-        patterns:
-          - "fastapi*"
-          - "uvicorn*"
-          - "starlette*"
-          - "httpx*"
-          - "pydantic*"
+        patterns: ["fastapi", "uvicorn*", "httpx", "pydantic*"]
+        update-types: ["minor", "patch"]
+      tooling:
+        patterns: ["ruff", "mypy", "pytest*", "types-*"]
         update-types: ["minor", "patch"]
       observability:
-        patterns:
-          - "prometheus-client*"
-          - "structlog*"
-        update-types: ["minor", "patch"]
-      testing:
-        patterns:
-          - "pytest*"
-          - "coverage*"
-          - "mock*"
-        update-types: ["minor", "patch"]
-      linting:
-        patterns:
-          - "ruff*"
-          - "black*"
-          - "isort*"
-          - "mypy*"
+        patterns: ["prometheus-client", "structlog*"]
         update-types: ["minor", "patch"]
 
-  # Python dependencies - Guard API
-  - package-ecosystem: "pip"
-    directory: "/apps/guard-api"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-      time: "08:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "python"
-      - "api"
-    commit-message:
-      prefix: "api-deps"
-    groups:
-      fastapi-stack:
-        patterns:
-          - "fastapi*"
-          - "uvicorn*"
-          - "httpx*"
-          - "pydantic*"
-        update-types: ["minor", "patch"]
-      observability:
-        patterns:
-          - "prometheus-client*"
-          - "structlog*"
-        update-types: ["minor", "patch"]
-
-  # Python dependencies - Guard Codex
+  # Python deps for Guard Codex (adjust/remove if not present)
   - package-ecosystem: "pip"
     directory: "/apps/guard-codex"
     schedule:
       interval: "weekly"
-      day: "thursday"
-      time: "08:00"
-      timezone: "Africa/Johannesburg"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "python"
+    labels: ["dependencies", "python", "codex"]
     commit-message:
-      prefix: "codex-deps"
+      prefix: "build(deps)"
+      include: "scope"
+    groups:
+      runtime:
+        patterns: ["fastapi", "uvicorn*", "httpx", "pydantic*"]
+        update-types: ["minor", "patch"]
+      tooling:
+        patterns: ["ruff", "mypy", "pytest*", "types-*"]
+        update-types: ["minor", "patch"]
 
-  # Python dependencies - MCP
-  - package-ecosystem: "pip"
-    directory: "/mcp"
-    schedule:
-      interval: "weekly"
-      day: "friday"
-      time: "08:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "python"
-    commit-message:
-      prefix: "mcp-deps"
-
-  # Docker dependencies
-  - package-ecosystem: "docker"
-    directory: "/ops/docker"
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
-      time: "09:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "docker"
-    commit-message:
-      prefix: "docker"
-
-  # Docker - Guard API
+  # Docker base images
   - package-ecosystem: "docker"
     directory: "/apps/guard-api"
     schedule:
       interval: "weekly"
-      day: "tuesday"
-      time: "10:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "docker"
-      - "api"
-    commit-message:
-      prefix: "api-docker"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 4
+    labels: ["dependencies", "docker", "api"]
     groups:
       python-runtime:
-        patterns:
-          - "python"
+        patterns: ["python"]
         update-types: ["minor", "patch"]
 
-  # Docker - Guard Codex
   - package-ecosystem: "docker"
     directory: "/apps/guard-codex"
     schedule:
       interval: "weekly"
-      day: "tuesday"
-      time: "11:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "docker"
-    commit-message:
-      prefix: "codex-docker"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 4
+    labels: ["dependencies", "docker", "codex"]
     groups:
       python-runtime:
-        patterns:
-          - "python"
+        patterns: ["python"]
         update-types: ["minor", "patch"]
 
   # GitHub Actions
@@ -183,42 +79,17 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "tuesday"
-      time: "12:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-      - "github_actions"
-    commit-message:
-      prefix: "ci"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 8
+    labels: ["dependencies", "github_actions"]
     groups:
       actions-core:
         patterns:
           - "actions/*"
           - "docker/*"
+          - "sigstore/*"
           - "anchore/*"
-          - "streetsidesoftware/*"
+          - "peter-evans/*"
         update-types: ["minor", "patch"]
-      setup-tools:
-        patterns:
-          - "*setup*"
-        update-types: ["minor", "patch"]
-
-  # Bundler - Documentation
-  - package-ecosystem: "bundler"
-    directory: "/docs"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-      time: "09:00"
-      timezone: "Africa/Johannesburg"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "platform-team"
-    labels:
-      - "dependencies"
-    commit-message:
-      prefix: "docs-deps"

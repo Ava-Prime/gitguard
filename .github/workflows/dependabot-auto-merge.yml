@@ -1,0 +1,64 @@
+name: dependabot-auto-merge
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    # Only Dependabot PRs, and only when the PR has the 'automerge' label.
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      contains(toJson(github.event.pull_request.labels), 'automerge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check update type is patch/minor
+        id: gate
+        run: |
+          echo "update_type=${{ steps.meta.outputs.update-type }}" >> $GITHUB_OUTPUT
+          case "${{ steps.meta.outputs.update-type }}" in
+            version-update:semver-patch|version-update:semver-minor)
+              echo "ok=true" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "ok=false" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      # Optional: leave a friendly note if it's a major or unknown
+      - name: Comment for non-auto-mergeable updates
+        if: steps.gate.outputs.ok != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: "Auto-merge is restricted to **patch/minor** updates. This PR is `${{ steps.meta.outputs.update-type }}` and requires manual review."
+            })
+
+      # Approve (useful for CODEOWNERS-required repos)
+      - name: Approve PR
+        if: steps.gate.outputs.ok == 'true'
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Enable GitHub's native auto-merge (waits for required checks to pass)
+      - name: Enable auto-merge (squash)
+        if: steps.gate.outputs.ok == 'true'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
