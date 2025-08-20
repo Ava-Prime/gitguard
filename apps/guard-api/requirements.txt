@@ -3,5 +3,5 @@ uvicorn[standard]==0.35.0
 httpx==0.28.1
 temporalio==1.5.0
 nats-py==2.11.0
-pydantic==2.5.0
+pydantic==2.11.7
 prometheus-client==0.22.1
