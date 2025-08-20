@@ -180,34 +180,42 @@ open http://localhost:8080  # GitGuard: Policy explorer, org-brain insights
 ## ✨ Features
 
 ### 🌟 **Try Before You Install**
-- **[Live Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)**: Experience GitGuard instantly in your browser
-- **One-Click Deployment**: Deploy to Railway, Render, or Fly.io in seconds
-- **Quick Start Scripts**: Single command setup for Linux, macOS, and Windows
-- **Pre-built Binaries**: Download and run immediately, no dependencies
+- **[Live Interactive Demo](https://codessa-platform.github.io/gitguard/demo/)**: Experience GitGuard instantly in your browser ✅ **Available Now**
+  - 📊 [Demo Health Status](https://codessa-platform.github.io/gitguard/demo/health) - Verify demo availability
+  - 🎯 [Sample Policy Decisions](https://codessa-platform.github.io/gitguard/demo/examples) - See real evaluations
+- **One-Click Deployment**: Deploy to Railway, Render, or Fly.io in seconds ✅ **Available Now**
+- **Quick Start Scripts**: Single command setup for Linux, macOS, and Windows ✅ **Available Now**
+- **Pre-built Binaries**: Download and run immediately, no dependencies ✅ **Available Now**
 
 ### 🔒 **Security & Compliance**
-- **Secret Detection**: Multi-layered scanning with entropy analysis
-- **Vulnerability Assessment**: Real-time CVE matching and CVSS scoring
-- **License Compliance**: Automated license compatibility checking
-- **Supply Chain Security**: Dependency graph analysis and risk assessment
+- **Secret Detection**: Multi-layered scanning with entropy analysis ✅ **Available Now**
+- **Vulnerability Assessment**: Real-time CVE matching and CVSS scoring ✅ **Available Now**
+- **License Compliance**: Automated license compatibility checking ✅ **Available Now**
+- **Supply Chain Security**: Dependency graph analysis and risk assessment ✅ **Available Now**
 
 ### 🤖 **AI-Powered Analysis**
-- **Intelligent Code Review**: Context-aware security recommendations
-- **Risk Scoring**: ML-based threat assessment and prioritization
-- **False Positive Reduction**: Smart filtering with confidence scoring
-- **Adaptive Learning**: Continuous improvement from feedback loops
+- **Intelligent Code Review**: Context-aware security recommendations ✅ **Available Now**
+- **Risk Scoring**: ML-based threat assessment and prioritization ✅ **Available Now** ([How it works](docs/risk-scoring.md))
+- **False Positive Reduction**: Smart filtering with confidence scoring 🚧 **Preview/Roadmap**
+- **Adaptive Learning**: Continuous improvement from feedback loops 🚧 **Preview/Roadmap**
 
 ### 🚀 **Developer Experience**
-- **Zero Configuration**: Works out-of-the-box with sensible defaults
-- **IDE Integration**: VS Code, IntelliJ, and Vim plugins available
-- **CLI Tools**: Comprehensive command-line interface for automation
-- **API-First**: RESTful APIs for custom integrations
+- **Zero Configuration**: Works out-of-the-box with sensible defaults ✅ **Available Now**
+- **CLI Tools**: Comprehensive command-line interface for automation ✅ **Available Now**
+- **API-First**: RESTful APIs for custom integrations ✅ **Available Now**
+- **IDE Integration**: VS Code, IntelliJ, and Vim plugins 🚧 **Preview/Roadmap**
 
 ### 📊 **Observability & Analytics**
-- **Real-time Dashboards**: Live security metrics and trends
-- **Custom Alerting**: Slack, Teams, PagerDuty integrations
-- **Audit Trails**: Comprehensive logging for compliance
-- **Performance Metrics**: P99 latency tracking and merge rate analytics
+- **Real-time Dashboards**: Live security metrics and trends ✅ **Available Now** ([Grafana Dashboards](ops/grafana/dashboards/))
+- **Custom Alerting**: Slack, Teams, PagerDuty integrations ✅ **Available Now**
+- **Audit Trails**: Comprehensive logging for compliance ✅ **Available Now**
+- **Performance Metrics**: P99 latency tracking and merge rate analytics ✅ **Available Now**
+
+### 🔍 **Service Architecture**
+- **guard-api**: Main webhook processor and policy engine ✅ **Available Now** ([Source](apps/guard-api/))
+- **guard-codex**: Knowledge graph and documentation engine ✅ **Available Now** ([Source](apps/guard-codex/))
+- **Org-Brain Intelligence**: Dynamic ownership mapping and policy transparency ✅ **Available Now** ([Tests](tests/test_knowledge_graph.py))
+- **OPA Integration**: Policy-as-code with full transparency ✅ **Available Now** ([Policies](policies/))
 
 ## 💡 The GitGuard Advantage
 
