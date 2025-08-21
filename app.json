@@ -1,164 +1,24 @@
 {
   "name": "GitGuard",
-  "description": "Policy-driven Git repository governance and compliance automation with autonomous decision-making capabilities.",
-  "repository": "https://github.com/codessa-platform/gitguard",
-  "logo": "https://raw.githubusercontent.com/codessa-platform/gitguard/main/docs/images/social-preview.svg",
-  "keywords": [
-    "git",
-    "governance",
-    "policy",
-    "automation",
-    "compliance",
-    "security",
-    "devops",
-    "ci-cd",
-    "repository-management",
-    "temporal",
-    "opa",
-    "rego"
-  ],
-  "website": "https://gitguard.dev",
-  "success_url": "/health",
-  "stack": "container",
-  "formation": {
-    "web": {
-      "quantity": 1,
-      "size": "basic"
-    },
-    "worker": {
-      "quantity": 1,
-      "size": "basic"
-    }
+  "url": "https://github.com/Ava-Prime/gitguard",
+  "hook_attributes": {
+    "url": "https://YOUR-TUNNEL-DOMAIN/webhook"
   },
-  "image": "heroku/python",
-  "addons": [
-    {
-      "plan": "heroku-postgresql:mini",
-      "as": "DATABASE"
-    },
-    {
-      "plan": "heroku-redis:mini",
-      "as": "REDIS"
-    },
-    {
-      "plan": "papertrail:choklad",
-      "as": "PAPERTRAIL"
-    }
-  ],
-  "buildpacks": [
-    {
-      "url": "heroku/python"
-    }
-  ],
-  "env": {
-    "ENVIRONMENT": {
-      "description": "Application environment",
-      "value": "production",
-      "required": true
-    },
-    "LOG_LEVEL": {
-      "description": "Logging level",
-      "value": "info",
-      "required": false
-    },
-    "METRICS_ENABLED": {
-      "description": "Enable metrics collection",
-      "value": "true",
-      "required": false
-    },
-    "HEALTH_CHECK_PATH": {
-      "description": "Health check endpoint path",
-      "value": "/health",
-      "required": false
-    },
-    "GITHUB_APP_ID": {
-      "description": "GitHub App ID for repository access",
-      "required": true
-    },
-    "GITHUB_APP_PRIVATE_KEY": {
-      "description": "GitHub App private key (base64 encoded)",
-      "required": true
-    },
-    "GITHUB_WEBHOOK_SECRET": {
-      "description": "GitHub webhook secret for payload verification",
-      "generator": "secret",
-      "required": true
-    },
-    "TEMPORAL_HOST": {
-      "description": "Temporal server host",
-      "value": "temporal.gitguard.svc.cluster.local:7233",
-      "required": false
-    },
-    "OPA_ENDPOINT": {
-      "description": "Open Policy Agent endpoint",
-      "value": "http://opa.gitguard.svc.cluster.local:8181",
-      "required": false
-    },
-    "GRAFANA_URL": {
-      "description": "Grafana dashboard URL",
-      "required": false
-    },
-    "PROMETHEUS_URL": {
-      "description": "Prometheus metrics endpoint",
-      "required": false
-    },
-    "SENTRY_DSN": {
-      "description": "Sentry DSN for error tracking",
-      "required": false
-    },
-    "ENCRYPTION_KEY": {
-      "description": "Encryption key for sensitive data",
-      "generator": "secret",
-      "required": true
-    }
+  "redirect_url": "https://github.com/Ava-Prime/gitguard",
+  "public": false,
+  "default_permissions": {
+    "metadata": "read",
+    "contents": "read",
+    "pull_requests": "write",
+    "checks": "write",
+    "statuses": "write"
   },
-  "scripts": {
-    "postdeploy": "python -m alembic upgrade head && python scripts/setup_demo_data.py"
-  },
-  "environments": {
-    "test": {
-      "addons": [
-        "heroku-postgresql:mini",
-        "heroku-redis:mini"
-      ],
-      "env": {
-        "ENVIRONMENT": "test",
-        "LOG_LEVEL": "debug",
-        "METRICS_ENABLED": "false"
-      },
-      "scripts": {
-        "test-setup": "python -m pytest --setup-only",
-        "test": "python -m pytest -v"
-      }
-    },
-    "review": {
-      "addons": [
-        "heroku-postgresql:mini",
-        "heroku-redis:mini"
-      ],
-      "env": {
-        "ENVIRONMENT": "review",
-        "LOG_LEVEL": "debug",
-        "METRICS_ENABLED": "true"
-      }
-    }
-  },
-  "features": [
-    "runtime-dyno-metadata",
-    "log-runtime-metrics"
-  ],
-  "stack": "heroku-22",
-  "healthchecks": [
-    {
-      "type": "startup",
-      "name": "web-startup",
-      "web_url": "/health"
-    },
-    {
-      "type": "liveness",
-      "name": "web-liveness",
-      "web_url": "/health",
-      "check_interval": 30
-    }
+  "default_events": [
+    "pull_request",
+    "push",
+    "check_suite",
+    "check_run",
+    "issue_comment",
+    "repository"
   ]
 }

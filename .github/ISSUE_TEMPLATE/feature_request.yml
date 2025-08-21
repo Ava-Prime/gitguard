@@ -1,20 +1,34 @@
 name: Feature request
-description: Propose an enhancement
-title: "[FEAT] "
-labels: ["enhancement", "needs-triage"]
+description: Propose a new capability or improvement
+labels: [enhancement, triage]
+assignees: []
 body:
-  - type: textarea
-    id: summary
+  - type: input
+    id: problem
     attributes:
-      label: Summary
-      description: What and why?
+      label: Problem statement
+      placeholder: What user need or pain are we solving?
     validations:
       required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: Describe the UX/API/config, and any alternatives you considered
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Value / impact
+      placeholder: Why this matters; who benefits
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope / non-goals
+      placeholder: What this feature will NOT do
   - type: textarea
     id: acceptance
     attributes:
       label: Acceptance criteria
-      description: Clear pass/fail checks
-      placeholder: |
-        - [ ] ...
-        - [ ] ...
+      placeholder: Checkable outcomes or tests that define "done"

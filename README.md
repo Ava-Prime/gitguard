@@ -127,6 +127,9 @@ curl -fsSL https://raw.githubusercontent.com/Ava-Prime/gitguard/main/scripts/qui
 # Windows PowerShell
 iwr -useb https://raw.githubusercontent.com/Ava-Prime/gitguard/main/scripts/quick-deploy.ps1 | iex
 
+# PowerShell (Windows) - Self-dogfooding
+.\scripts\dogfood.ps1 self-dogfood
+
 # Docker Compose
 git clone https://github.com/Ava-Prime/gitguard.git
 cd gitguard && docker-compose up -d
