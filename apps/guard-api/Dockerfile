@@ -31,4 +31,4 @@ USER gitguard
 EXPOSE 8000 8080
 
 # Security: Run with explicit user and read-only filesystem where possible
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "apps.guard-api.main:app", "--host", "0.0.0.0", "--port", "8000"]

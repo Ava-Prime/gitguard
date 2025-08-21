@@ -1,0 +1,54 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# CI/CD
+.github/
+.pre-commit-config.yaml
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+
+# Development files
+.env*
+!.env.sample
+docker-compose*.yml
+Makefile
+
+# Temporary files
+*.tmp
+*.log
