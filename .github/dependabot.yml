@@ -23,8 +23,8 @@ updates:
       observability:
         patterns: ["prometheus-client", "structlog*"]
         update-types: ["minor", "patch"]
+  # Python deps for Guard Codex
 
-  # Python deps for Guard Codex (adjust/remove if not present)
   - package-ecosystem: "pip"
     directory: "/apps/guard-codex"
     schedule:

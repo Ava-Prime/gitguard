@@ -61,7 +61,134 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
 
-      - name: Cosign keyless sign & verify
+      - name: Setup Python for Release Artifacts
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
         run: |
-          cosign sign ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }} \
-            --yes
+          pip install -r requirements.txt
+          python -m build
+
+      - name: Generate Source SBOM
+        uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
+        with:
+          path: .
+          format: spdx-json
+          output-file: gitguard-source-sbom.spdx.json
+
+      - name: Generate Python Package SBOM
+        uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
+        with:
+          path: dist/
+          format: spdx-json
+          output-file: gitguard-package-sbom.spdx.json
+
+      - name: Sign Container Images with Cosign
+        run: |
+          # Sign the tagged release
+          cosign sign ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }} --yes
+
+          # Sign the latest tag
+          cosign sign ghcr.io/${{ github.repository_owner }}/gitguard:latest --yes
+
+          echo "✅ Container images signed successfully"
+
+      - name: Attest SBOMs to Container Images
+        run: |
+          # Attest source SBOM to tagged release
+          cosign attest --yes --predicate gitguard-source-sbom.spdx.json --type spdxjson \
+            ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+
+          # Attest package SBOM to tagged release
+          cosign attest --yes --predicate gitguard-package-sbom.spdx.json --type spdxjson \
+            ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+
+          echo "✅ SBOMs attested to container images"
+
+      - name: Generate Release Provenance
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
+        with:
+          subject-path: |
+            dist/*.whl
+            dist/*.tar.gz
+            gitguard-source-sbom.spdx.json
+            gitguard-package-sbom.spdx.json
+
+      - name: Verify Signatures and Attestations
+        run: |
+          # Verify container signatures
+          cosign verify ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+          cosign verify ghcr.io/${{ github.repository_owner }}/gitguard:latest
+
+          # Verify SBOM attestations
+          cosign verify-attestation --type spdxjson \
+            ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+
+          echo "✅ All signatures and attestations verified"
+
+      - name: Upload Release Artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: gitguard-source-sbom.spdx.json
+          asset_name: gitguard-${{ github.event.release.tag_name }}-source-sbom.spdx.json
+          asset_content_type: application/json
+
+      - name: Upload Package SBOM
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: gitguard-package-sbom.spdx.json
+          asset_name: gitguard-${{ github.event.release.tag_name }}-package-sbom.spdx.json
+          asset_content_type: application/json
+
+      - name: Generate Security Summary
+        run: |
+          cat > security-summary.md << 'EOF'
+          # GitGuard ${{ github.event.release.tag_name }} Security Summary
+
+          ## 🔒 Supply Chain Security
+
+          This release includes comprehensive supply chain security measures:
+
+          ### Container Images
+          - **Signed**: ✅ Keyless signing with Cosign
+          - **SBOM**: ✅ Software Bill of Materials attached
+          - **Provenance**: ✅ Build provenance attestation
+          - **Multi-arch**: ✅ linux/amd64, linux/arm64
+
+          ### Python Packages
+          - **SBOM**: ✅ Package dependencies documented
+          - **Provenance**: ✅ Build attestation included
+          - **Verification**: ✅ Signatures verified in CI
+
+          ### Verification Commands
+
+          ```bash
+          # Verify container signature
+          cosign verify ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+
+          # Verify SBOM attestation
+          cosign verify-attestation --type spdxjson ghcr.io/${{ github.repository_owner }}/gitguard:${{ github.event.release.tag_name }}
+
+          # Download and verify SBOMs
+          curl -L -o source-sbom.json https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/gitguard-${{ github.event.release.tag_name }}-source-sbom.spdx.json
+          curl -L -o package-sbom.json https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/gitguard-${{ github.event.release.tag_name }}-package-sbom.spdx.json
+          ```
+
+          ### Security Badges Status
+          - 🛡️ **SBOM**: Available in release assets
+          - 🔐 **Signed**: Keyless signing with Sigstore
+          - 📋 **Provenance**: Build attestation attached
+          - 🔍 **Verified**: All signatures validated in CI
+
+          EOF
+
+          echo "## 🔒 Security Summary" >> $GITHUB_STEP_SUMMARY
+          cat security-summary.md >> $GITHUB_STEP_SUMMARY

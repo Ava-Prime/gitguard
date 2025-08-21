@@ -1,34 +1,60 @@
 name: Bug report
-description: Report a bug in GitGuard
-title: "[BUG] "
-labels: ["bug", "needs-triage"]
+description: Something isn't working as expected
+labels: [bug, triage]
+assignees: []
 body:
-  - type: textarea
-    id: what-happened
+  - type: markdown
     attributes:
-      label: What happened?
-      description: Describe the bug and expected behavior
+      value: |
+        Thanks for helping improve GitGuard! Please fill in the details below.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line description of the bug
+      placeholder: Policy evaluation always returns DENY for valid inputs
     validations:
       required: true
   - type: textarea
-    id: repro
+    id: steps
     attributes:
       label: Steps to reproduce
-      description: Step-by-step reproduction
+      description: Exact steps with minimal repro (commands, sample repo/policy, config)
+      render: bash
       placeholder: |
-        1. Go to '...'
-        2. Run '...'
-        3. See error
+        1. `git clone ...`
+        2. `docker compose -f docker-compose.demo.yml up`
+        3. Call POST /evaluate with payload X
     validations:
       required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and logs
+      render: text
   - type: input
     id: version
     attributes:
-      label: GitGuard version (tag/commit)
-    validations:
-      required: true
-  - type: textarea
+      label: Version / image tag
+      placeholder: e.g., v0.1.0 or ghcr.io/ava-prime/gitguard:0.1.0
+  - type: input
     id: env
     attributes:
       label: Environment
-      description: OS, Python, Docker/K8s, etc.
+      placeholder: OS, Python, Docker version, CI provider
+  - type: checkboxes
+    id: regression
+    attributes:
+      label: Regression?
+      options:
+        - label: This worked in a previous version
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
