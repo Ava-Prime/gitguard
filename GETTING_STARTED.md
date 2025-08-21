@@ -180,6 +180,135 @@ GitGuard includes three demo flows to showcase different use cases:
 - Visual graph exploration capabilities
 - Dynamic relationship updates
 
+## Org-Brain Intelligence API (60-Second Verification)
+
+GitGuard's "Org-Brain" provides real-time organizational intelligence through a REST API. Here's how to verify it's working in under a minute:
+
+### Quick API Test
+
+```bash
+# 1. Check API health (5 seconds)
+curl http://localhost:8002/health
+# Expected: {"status": "healthy", "services": ["postgresql", "nats", "temporal"]}
+
+# 2. Get ownership index (15 seconds)
+curl http://localhost:8002/api/v1/ownership/index | jq
+# Expected: Dynamic ownership mapping based on recent commits
+
+# 3. Query file ownership (10 seconds)
+curl "http://localhost:8002/api/v1/ownership/files?path=apps/guard-api/main.py" | jq
+# Expected: Owner details with activity metrics
+
+# 4. Get relationship graph (15 seconds)
+curl http://localhost:8002/api/v1/graph/relationships | jq
+# Expected: Node/edge data for Mermaid visualization
+
+# 5. Search knowledge graph (15 seconds)
+curl "http://localhost:8002/api/v1/knowledge/search?q=policy" | jq
+# Expected: Policy-related entities and relationships
+```
+
+### Sample Response - Ownership Index
+
+```json
+{
+  "owners": {
+    "apps/guard-api/": {
+      "primary": "alice@company.com",
+      "secondary": ["bob@company.com"],
+      "activity_score": 0.85,
+      "last_commit": "2024-01-15T10:30:00Z",
+      "expertise_areas": ["webhooks", "temporal", "nats"]
+    },
+    "policies/": {
+      "primary": "security-team@company.com",
+      "secondary": ["alice@company.com"],
+      "activity_score": 0.92,
+      "last_commit": "2024-01-14T16:45:00Z",
+      "expertise_areas": ["opa", "governance", "compliance"]
+    }
+  },
+  "metadata": {
+    "generated_at": "2024-01-15T12:00:00Z",
+    "total_files": 247,
+    "coverage_percentage": 94.2
+  }
+}
+```
+
+### Sample Response - Relationship Graph
+
+```json
+{
+  "nodes": [
+    {
+      "id": "guard-api",
+      "type": "service",
+      "label": "Guard API",
+      "properties": {
+        "language": "python",
+        "framework": "fastapi",
+        "owner": "alice@company.com"
+      }
+    },
+    {
+      "id": "opa-policies",
+      "type": "policy_set",
+      "label": "OPA Policies",
+      "properties": {
+        "policy_count": 12,
+        "owner": "security-team@company.com"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "guard-api",
+      "to": "opa-policies",
+      "type": "evaluates",
+      "properties": {
+        "frequency": "per_pr",
+        "last_evaluation": "2024-01-15T11:45:00Z"
+      }
+    }
+  ]
+}
+```
+
+### Integration Examples
+
+**Portal Integration (JavaScript)**:
+```javascript
+// Fetch ownership for current file
+const ownership = await fetch(`http://localhost:8002/api/v1/ownership/files?path=${filePath}`);
+const data = await ownership.json();
+console.log(`File owner: ${data.primary}`);
+```
+
+**CLI Integration (Python)**:
+```python
+import requests
+
+# Get expertise areas for a user
+response = requests.get("http://localhost:8002/api/v1/ownership/users/alice@company.com")
+user_data = response.json()
+print(f"Expertise: {', '.join(user_data['expertise_areas'])}")
+```
+
+**Dashboard Widget (curl + jq)**:
+```bash
+# Generate ownership summary for dashboard
+curl -s http://localhost:8002/api/v1/ownership/summary | \
+  jq -r '.top_contributors[] | "\(.email): \(.contribution_percentage)%"'
+```
+
+### API Documentation
+
+Full API documentation is available at:
+- **Interactive Docs**: http://localhost:8002/docs
+- **OpenAPI Spec**: http://localhost:8002/openapi.json
+- **Graph Schema**: http://localhost:8002/api/v1/schema
+
 ## Customizing GitGuard
 
 ### Adding Custom Policies

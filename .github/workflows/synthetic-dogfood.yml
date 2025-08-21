@@ -1,0 +1,37 @@
+name: synthetic-dogfood
+on:
+  schedule: [{ cron: "17 2 * * *" }] # daily @ 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  open-synthetic-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Touch synthetic heartbeat
+        run: |
+          mkdir -p dogfood
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > dogfood/heartbeat.txt
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dogfood/synthetic
+          title: "Synthetic dogfood PR (policy smoke)"
+          body: |
+            This PR is generated to exercise GitGuard policies end-to-end.
+            It intentionally **omits** the semantic label to trigger policy evaluation.
+          commit-message: "chore(dogfood): synthetic heartbeat"
+          signoff: false
+          delete-branch: true
+          labels: "dogfood,ci"
+      - name: Link to PR
+        if: steps.cpr.outputs.pull-request-number
+        run: echo "Opened PR #${{ steps.cpr.outputs.pull-request-number }}"
